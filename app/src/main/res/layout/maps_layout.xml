@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/action_bar"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -13,25 +30,14 @@
         android:layout_alignParentTop="true"
         tools:context="com.proffstore.andrew.mapsproffstore.MapsLayoutActivity" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:background="#60FFFFFF"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="7dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginBottom="7dp">
+        android:clickable="true"
+        android:src="@drawable/ic_map_marker_radius"
+        app:elevation="7dp"
+        app:layout_anchor="@id/map"
+        app:layout_anchorGravity="bottom|right|end" />
 
-        <Spinner
-            android:id="@+id/spinner"
-            android:drawSelectorOnTop="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/map_types"
-            android:spinnerMode="dropdown" />
-    </LinearLayout>
-
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
