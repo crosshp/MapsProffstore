@@ -3,7 +3,6 @@
     package="com.proffstore.andrew.mapsproffstore">
 
     <application
-
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -12,6 +11,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key" />
+
         <activity android:name=".MapsLayoutActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

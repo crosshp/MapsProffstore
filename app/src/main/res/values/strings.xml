@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">MapsProffstore</string>
     <string name="maps_api_key">AIzaSyCwO97GZx0JJdJfFk0PSoB081HaKEhlNF4</string>
+    <string-array name="map_types">
+        <item>Карта</item>
+        <item>Спутник</item>
+        <item>Гибрид</item>
+    </string-array>
+    <string name="title_activity_navigation_drawer">NavigationDrawerActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>
