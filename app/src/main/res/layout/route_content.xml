@@ -52,7 +52,7 @@
             android:layout_weight="1" />
 
         <EditText
-            android:id="@+id/editText"
+            android:id="@+id/editShowStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
@@ -81,7 +81,7 @@
             android:layout_weight="1" />
 
         <EditText
-            android:id="@+id/editTex4t"
+            android:id="@+id/editShowFinish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
