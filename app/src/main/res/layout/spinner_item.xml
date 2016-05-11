@@ -4,5 +4,4 @@
     android:layout_height="wrap_content"
     android:fontFamily="sans-serif-light"
     android:id="@+id/textView"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:textColor="@color/colorPrimary" />
+    android:textAppearance="?android:attr/textAppearanceLarge" />

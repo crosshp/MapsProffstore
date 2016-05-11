@@ -11,6 +11,13 @@
     <string name="cancel">Отменить</string>
     <string name="show_points">Отобразить объекты</string>
     <string name="show_routes">Отобразить маршруты</string>
+    <string name="point_item">Объекты</string>
+    <string name="route_item">Маршруты</string>
+    <string name="lang_item">Язык</string>
+    <string name="earth_item">Спутник</string>
+    <string name="hybrid_item">Гибрид</string>
+    <string name="map_item">Карта</string>
+    <string name="exit_item">Выход</string>
 
     <string-array name="map_types">
         <item>Карта</item>

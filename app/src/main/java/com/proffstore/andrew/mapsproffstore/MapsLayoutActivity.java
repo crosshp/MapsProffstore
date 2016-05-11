@@ -1,14 +1,13 @@
 package com.proffstore.andrew.mapsproffstore;
 
 import android.Manifest;
-import android.app.DialogFragment;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -34,27 +33,34 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.SphericalUtil;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private SharedPreferences sharedPreferences = null;
+    private static String NAME_ACCOUNT = "NAME_ACCOUNT";
+    private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_layout);
-
-        float x = getIntent().getFloatExtra("x", 0);
-        float y = getIntent().getFloatExtra("y", 0);
-        if (x != 0 && y != 0) {
-            LatLng intentLatLng = new LatLng(x, y);
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(intentLatLng));
-        }
         // Initialize google map
         SupportMapFragment mapFragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -72,6 +78,8 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 final AlertDialog alertDialog = builder.show();
                 final ListView pointsList = (ListView) view.findViewById(R.id.listView);
                 final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.routesMenuContent);
+                PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
+                pointsList.setAdapter(adapter);
                 EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
                 final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
                 editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -84,7 +92,13 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                     new DatePickerDialog.OnDateSetListener() {
                                         @Override
                                         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-                                            editShowFinish.setText(dayOfMonth+"/"+monthOfYear+"/"+year);
+                                            String myFormat = "dd/mm/yyyy"; //In which you need put here
+                                            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+                                            Calendar calendar = Calendar.getInstance();
+                                            calendar.set(Calendar.YEAR, year);
+                                            calendar.set(Calendar.MONTH, monthOfYear + 1);
+                                            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                                            editShowFinish.setText(sdf.format(calendar.getTime()));
                                         }
                                     },
                                     now.get(Calendar.YEAR),
@@ -104,6 +118,8 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         if (isChecked) {
                             pointsList.setVisibility(View.VISIBLE);
                             linearLayout.setVisibility(View.GONE);
+                            PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
+                            pointsList.setAdapter(adapter);
                         } else {
                             pointsList.setVisibility(View.GONE);
                             linearLayout.setVisibility(View.VISIBLE);
@@ -112,8 +128,9 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 });
             }
         });
-        final Drawer drawer = new DrawerBuilder().withActivity(this).build();
+        final Drawer drawer = initializeDrawer();
         ImageButton imageButton = (ImageButton) findViewById(R.id.drawerButton);
+        assert imageButton != null;
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -126,6 +143,56 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 }
             }
         });
+
+
+    }
+
+    public List<String> getPointsName() {
+        List<String> strings = new ArrayList<>();
+        strings.add("Olol");
+        strings.add("Olol1");
+        strings.add("Olol2");
+        strings.add("Olol3");
+        strings.add("Olol4");
+        return strings;
+    }
+
+    private Drawer initializeDrawer() {
+        Drawer drawer = new DrawerBuilder().withActivity(this).withAccountHeader(getAccount())
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        switch (position) {
+                            case 0: {
+                                break;
+                            }
+                            case 1: {
+                                break;
+                            }
+                            case 2: {
+                                break;
+                            }
+                            case 3: {
+                                break;
+                            }
+                            case 4: {
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        return false;
+                    }
+                }).build();
+        PrimaryDrawerItem pointItem = new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
+        PrimaryDrawerItem routeItem = new SecondaryDrawerItem().withName(R.string.route_item).withIcon(R.drawable.ic_routes);
+        PrimaryDrawerItem langItem = new SecondaryDrawerItem().withName(R.string.lang_item).withIcon(R.drawable.ic_routes);
+        PrimaryDrawerItem earthItem = new SecondaryDrawerItem().withName(R.string.earth_item).withIcon(R.drawable.ic_earth);
+        PrimaryDrawerItem hybridItem = new SecondaryDrawerItem().withName(R.string.hybrid_item).withIcon(R.drawable.ic_google_earth);
+        PrimaryDrawerItem mapItem = new SecondaryDrawerItem().withName(R.string.map_item).withIcon(R.drawable.ic_map);
+        PrimaryDrawerItem exitItem = new SecondaryDrawerItem().withName(R.string.exit_item).withIcon(R.drawable.ic_exit_to_app);
+        drawer.addItems(pointItem, routeItem, new DividerDrawerItem(), earthItem, hybridItem, mapItem, new DividerDrawerItem(), langItem, exitItem);
+        return drawer;
     }
 
     // Override volume buttons
@@ -150,14 +217,16 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
     CircleOptions circle = null;
     LatLng sydney = null;
-    MarkerOptions markerOptions = null;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        //   mMap.getUiSettings().setZoomControlsEnabled(true);
-        // Add a marker in Sydney and move the camera
+        double x = getIntent().getDoubleExtra("x", 0);
+        double y = getIntent().getDoubleExtra("y", 0);
+        if (x != 0 && y != 0) {
+            LatLng intentLatLng = new LatLng(x, y);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(intentLatLng, 15));
+        }
         sydney = new LatLng(-34, 151);
         LatLng sydney1 = new LatLng(-35, 152);
         LatLng sydney2 = new LatLng(-20, 12);
@@ -168,16 +237,9 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         mMap.addPolyline(new PolylineOptions().add(sydney).add(sydney1).add(sydney2));
         circle = new CircleOptions().strokeWidth(3).center(sydney).radius(5000).visible(true).fillColor(ContextCompat.getColor(this, R.color.colorMarker)).strokeColor(ContextCompat.getColor(this, R.color.colorMarkerCorner));
         mMap.addCircle(circle);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
         Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, sydney1) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         mMap.setMyLocationEnabled(true);
@@ -196,8 +258,22 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         .setContentText("Content text")
                         .setContentIntent(pendingIntent);
                 NotificationManagerCompat.from(getBaseContext()).notify(1, builder.build());
-
             }
         });
     }
+
+    public AccountHeader getAccount() {
+        sharedPreferences = getPreferences(MODE_PRIVATE);
+        String name = sharedPreferences.getString(NAME_ACCOUNT, "NULL");
+        String email = sharedPreferences.getString(EMAIL_ACCOUNT, "null@mail");
+        AccountHeaderBuilder accountHeader = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withHeaderBackground(R.drawable.iniy_gradient)
+                .addProfiles(new ProfileDrawerItem()
+                        .withEmail(email)
+                        .withName(name));
+        return accountHeader.build();
+    }
+
+
 }
