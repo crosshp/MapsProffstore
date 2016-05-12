@@ -24,6 +24,10 @@
     <string name="apply">Применить</string>
     <string name="app_lang">Язык приложения</string>
 
+    <string name="name_kt">Название контрольной точки</string>
+    <string name="radius_kt">Радиус контрольной точки (м)</string>
+    <string name="edit_field">Заполните все поля!</string>
+
     <string-array name="map_types">
         <item>Карта</item>
         <item>Спутник</item>

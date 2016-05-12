@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
@@ -18,6 +19,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -115,13 +117,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
                 pointsList.setAdapter(adapter);
 
-                EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
-                final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
-                editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                final EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
+                editShowStart.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View v, boolean hasFocus) {
                         if (hasFocus) {
-                            Log.e("calendar", "I am in Focus");
                             Calendar now = Calendar.getInstance();
                             DatePickerDialog dpd = DatePickerDialog.newInstance(
                                     new DatePickerDialog.OnDateSetListener() {
@@ -133,8 +133,34 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                             stringBuilder.append(monthOfYear + 1);
                                             stringBuilder.append("/");
                                             stringBuilder.append(year);
-                                            editShowFinish.append(stringBuilder);
-                                            //   editShowFinish.setText(stringBuilder);
+                                            editShowStart.setText(stringBuilder);
+                                        }
+                                    },
+                                    now.get(Calendar.YEAR),
+                                    now.get(Calendar.MONTH),
+                                    now.get(Calendar.DAY_OF_MONTH)
+                            );
+                            dpd.show(getFragmentManager(), "DatepickerdialogCalendar");
+                        }
+                    }
+                });
+                final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
+                editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (hasFocus) {
+                            Calendar now = Calendar.getInstance();
+                            DatePickerDialog dpd = DatePickerDialog.newInstance(
+                                    new DatePickerDialog.OnDateSetListener() {
+                                        @Override
+                                        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                                            StringBuilder stringBuilder = new StringBuilder();
+                                            stringBuilder.append(dayOfMonth);
+                                            stringBuilder.append("/");
+                                            stringBuilder.append(monthOfYear + 1);
+                                            stringBuilder.append("/");
+                                            stringBuilder.append(year);
+                                            editShowFinish.setText(stringBuilder);
                                         }
                                     },
                                     now.get(Calendar.YEAR),
@@ -142,8 +168,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                     now.get(Calendar.DAY_OF_MONTH)
                             );
                             dpd.show(getFragmentManager(), "Datepickerdialog");
-                        } else {
-                            Log.e("calendar", "NO Focus");
                         }
                     }
                 });
@@ -277,7 +301,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     LatLng sydney = null;
 
     public void showLangDialog() {
-        Log.e("here", "I am here");
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
         builder.setTitle(getResources().getString(R.string.app_lang));
         builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.rus), getResources().getString(R.string.ukr)}, isRussian ? 0 : 1, new DialogInterface.OnClickListener() {
@@ -312,6 +335,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         builder.show();
     }
 
+    public void initializePoints() {
+
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -322,6 +349,54 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             LatLng intentLatLng = new LatLng(x, y);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(intentLatLng, 15));
         }
+
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(final LatLng latLng) {
+                final CircleOptions[] circleKT = {null};
+                final MarkerOptions[] markerOptions = {null};
+                AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+                final View view = View.inflate(MapsLayoutActivity.this, R.layout.control_point_dialog, null);
+                builder.setView(view);
+                final EditText editName = (EditText) view.findViewById(R.id.editNameKT);
+                final EditText editRadius = (EditText) view.findViewById(R.id.editRadiusKT);
+                builder.setPositiveButton(R.string.apply, null);
+                builder.setNegativeButton(R.string.cancel, null);
+                final AlertDialog alertDialog = builder.create();
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        Button b = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                        b.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                boolean closeDialog = false;
+                                Log.e("Dialog","I am here");
+                                // TODO Do something
+                                if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
+                                    Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
+                                } else {
+                                    circleKT[0] = new CircleOptions().strokeWidth(3).center(latLng)
+                                            .radius(Integer.valueOf(editRadius.getText().toString())).visible(true)
+                                            .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
+                                            .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner));
+                                    markerOptions[0] = new MarkerOptions().title(editName.getText().toString()).position(latLng);
+                                    mMap.addCircle(circleKT[0]);
+                                    mMap.addMarker(markerOptions[0]);
+                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                                    closeDialog = true;
+                                }
+                                if (closeDialog) {
+                                    alertDialog.dismiss();
+                                }
+                            }
+                        });
+                    }
+                });
+                alertDialog.show();
+            }
+        });
+
         sydney = new LatLng(-34, 151);
         LatLng sydney1 = new LatLng(-35, 152);
         LatLng sydney2 = new LatLng(-20, 12);
