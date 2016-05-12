@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MapsProffstore</string>
+    <string name="maps_api_key">AIzaSyCwO97GZx0JJdJfFk0PSoB081HaKEhlNF4</string>
+
+    <string name="object">Об’єкт</string>
+    <string name="start_show">Показати з:</string>
+    <string name="end_show">Показати до:</string>
+    <string name="distance">Пробіг:</string>
+    <string name="display_mode">Режим відображення</string>
+    <string name="show">Показати</string>
+    <string name="cancel">Відмінити</string>
+    <string name="show_points">Відобразити об’єкти</string>
+    <string name="show_routes">Відобразити маршрути</string>
+    <string name="point_item">Об’єкти</string>
+    <string name="route_item">Маршрути</string>
+    <string name="lang_item">Мова</string>
+    <string name="earth_item">Супутник</string>
+    <string name="hybrid_item">Гібрид</string>
+    <string name="map_item">Карта</string>
+    <string name="exit_item">Вихід</string>
+
+    <string name="rus">Російська</string>
+    <string name="ukr">Українська</string>
+    <string name="apply">Застосувати</string>
+    <string name="app_lang">Мова додатку</string>
+
+    <string-array name="map_types">
+        <item>Карта</item>
+        <item>Супутник</item>
+        <item>Гібрид</item>
+    </string-array>
+</resources>

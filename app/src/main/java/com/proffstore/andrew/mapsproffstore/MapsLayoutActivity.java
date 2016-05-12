@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -39,13 +40,11 @@ import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -53,7 +52,12 @@ import java.util.Locale;
 
 public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    public MapsLayoutActivity() {
+    }
+
     private GoogleMap mMap;
+    SupportMapFragment mapFragment = null;
+    private static boolean isRussian = true;
     boolean isMapReady = false;
     private SharedPreferences sharedPreferences = null;
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
@@ -62,9 +66,21 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sharedPreferences = getPreferences(MODE_PRIVATE);
+        String lang = sharedPreferences.getString("lang", "ru");
+        String cntr = sharedPreferences.getString("country", "RUS");
+        if (lang.equals("ru")) {
+            isRussian = true;
+        }
+        Locale locale = new Locale(lang, cntr);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         setContentView(R.layout.maps_layout);
         // Initialize google map
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment = (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
+
         mapFragment.getMapAsync(this);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         assert fab != null;
@@ -264,15 +280,32 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         Log.e("here", "I am here");
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
         builder.setTitle(getResources().getString(R.string.app_lang));
-        builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.rus), getResources().getString(R.string.ukr)}, 1, new DialogInterface.OnClickListener() {
+        builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.rus), getResources().getString(R.string.ukr)}, isRussian ? 0 : 1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                if (which == 0) {
+                    isRussian = true;
+                } else {
+                    isRussian = false;
+                }
             }
         });
         builder.setPositiveButton(getResources().getString(R.string.apply), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                sharedPreferences = getPreferences(MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                Toast.makeText(getBaseContext(), "isRussian = " + String.valueOf(isRussian), Toast.LENGTH_SHORT).show();
+                if (isRussian) {
+                    editor.putString("lang", "ru");
+                    editor.putString("country", "RUS");
+
+                } else {
+                    editor.putString("lang", "uk");
+                    editor.putString("country", "UA");
+                }
+                editor.commit();
+                recreate();
             }
         });
         builder.setNegativeButton(getResources().getString(R.string.cancel), null);
@@ -336,6 +369,4 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         .withName(name));
         return accountHeader.build();
     }
-
-
 }
