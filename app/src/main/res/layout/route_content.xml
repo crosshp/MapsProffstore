@@ -56,8 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:gravity="right"
-            android:inputType="date" />
+             />
 
     </LinearLayout>
 
@@ -85,8 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:gravity="right"
-            android:inputType="date" />
+             />
 
     </LinearLayout>
 
@@ -115,8 +113,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:gravity="right"
-            android:inputType="number" />
+            android:inputType="none" />
 
     </LinearLayout>
 

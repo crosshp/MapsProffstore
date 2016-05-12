@@ -8,6 +8,11 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+        <item name="android:checkboxStyle">@style/CheckBoxDialog</item>
+    </style>
+
+    <style name="CheckBoxDialog" parent="@android:style/Widget.Holo.Light.CompoundButton.CheckBox">
+        <item name="android:checkMark">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

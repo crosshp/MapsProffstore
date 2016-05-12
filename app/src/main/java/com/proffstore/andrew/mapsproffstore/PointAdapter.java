@@ -1,21 +1,16 @@
 package com.proffstore.andrew.mapsproffstore;
 
 import android.content.Context;
-import android.content.Intent;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.zip.Inflater;
 
 /**
  * Created by Andrew on 12.05.2016.
@@ -23,11 +18,21 @@ import java.util.zip.Inflater;
 public class PointAdapter extends BaseAdapter {
     private final LayoutInflater lInflater;
     private List<String> data = null;
+    ArrayList<Boolean> positionArray;
+
+    public List<Integer> getPointsIndex() {
+        return pointsIndex;
+    }
+
     private List<Integer> pointsIndex = new ArrayList<>();
 
     public PointAdapter(Context context, List<String> data) {
         this.data = data;
         lInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        positionArray = new ArrayList<>(data.size());
+        for (int i = 0; i < data.size(); i++) {
+            positionArray.add(false);
+        }
     }
 
     @Override
@@ -48,18 +53,25 @@ public class PointAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View view = convertView;
+        AppCompatCheckBox checkBox = null;
         if (view == null) {
             view = lInflater.inflate(R.layout.points_item, parent, false);
         }
-        CheckBox checkBox = (CheckBox) view.findViewById(R.id.checkBox);
+        checkBox = (AppCompatCheckBox) view.findViewById(R.id.checkBox);
+        checkBox.setChecked(positionArray.get(position));
         TextView pointListName = (TextView) view.findViewById(R.id.pointName);
         pointListName.setText(data.get(position));
+        final AppCompatCheckBox finalCheckBox = checkBox;
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    positionArray.add(position, true);
+                    finalCheckBox.setSelected(true);
                     pointsIndex.add((Integer) position);
                 } else {
+                    positionArray.add(position, false);
+                    finalCheckBox.setSelected(false);
                     pointsIndex.remove((Integer) position);
                 }
             }

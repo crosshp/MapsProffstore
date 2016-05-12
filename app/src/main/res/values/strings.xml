@@ -19,6 +19,11 @@
     <string name="map_item">Карта</string>
     <string name="exit_item">Выход</string>
 
+    <string name="rus">Русский</string>
+    <string name="ukr">Украинский</string>
+    <string name="apply">Применить</string>
+    <string name="app_lang">Язык приложения</string>
+
     <string-array name="map_types">
         <item>Карта</item>
         <item>Спутник</item>

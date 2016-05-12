@@ -2,6 +2,7 @@ package com.proffstore.andrew.mapsproffstore;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -53,6 +54,7 @@ import java.util.Locale;
 public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    boolean isMapReady = false;
     private SharedPreferences sharedPreferences = null;
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
@@ -69,17 +71,34 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final boolean[] isPointView = {true};
+                final PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
                 AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
                 builder.setTitle(getResources().getString(R.string.display_mode));
                 View view = View.inflate(MapsLayoutActivity.this, R.layout.menu_point_layout, null);
                 builder.setView(view);
-                builder.setPositiveButton(getResources().getString(R.string.show), null);
+                builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (isPointView[0]) {
+                            List<Integer> pointsIndex = adapter.getPointsIndex();
+                            for (Integer point : pointsIndex) {
+                                Log.e("point", String.valueOf(point));
+                            }
+                        }
+                    }
+                });
+
                 builder.setNegativeButton(getResources().getString(R.string.cancel), null);
                 final AlertDialog alertDialog = builder.show();
+
                 final ListView pointsList = (ListView) view.findViewById(R.id.listView);
+                pointsList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                pointsList.setItemsCanFocus(false);
                 final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.routesMenuContent);
-                PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
+
                 pointsList.setAdapter(adapter);
+
                 EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
                 final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
                 editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -92,13 +111,14 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                     new DatePickerDialog.OnDateSetListener() {
                                         @Override
                                         public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-                                            String myFormat = "dd/mm/yyyy"; //In which you need put here
-                                            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-                                            Calendar calendar = Calendar.getInstance();
-                                            calendar.set(Calendar.YEAR, year);
-                                            calendar.set(Calendar.MONTH, monthOfYear + 1);
-                                            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                                            editShowFinish.setText(sdf.format(calendar.getTime()));
+                                            StringBuilder stringBuilder = new StringBuilder();
+                                            stringBuilder.append(dayOfMonth);
+                                            stringBuilder.append("/");
+                                            stringBuilder.append(monthOfYear + 1);
+                                            stringBuilder.append("/");
+                                            stringBuilder.append(year);
+                                            editShowFinish.append(stringBuilder);
+                                            //   editShowFinish.setText(stringBuilder);
                                         }
                                     },
                                     now.get(Calendar.YEAR),
@@ -116,11 +136,13 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked) {
+                            isPointView[0] = true;
                             pointsList.setVisibility(View.VISIBLE);
                             linearLayout.setVisibility(View.GONE);
                             PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
                             pointsList.setAdapter(adapter);
                         } else {
+                            isPointView[0] = false;
                             pointsList.setVisibility(View.GONE);
                             linearLayout.setVisibility(View.VISIBLE);
                         }
@@ -154,28 +176,56 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         strings.add("Olol2");
         strings.add("Olol3");
         strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
+        strings.add("Olol4");
         return strings;
     }
 
     private Drawer initializeDrawer() {
-        Drawer drawer = new DrawerBuilder().withActivity(this).withAccountHeader(getAccount())
+        SecondaryDrawerItem pointItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
+        SecondaryDrawerItem routeItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.route_item).withIcon(R.drawable.ic_routes);
+        SecondaryDrawerItem langItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.lang_item).withIcon(R.drawable.ic_routes);
+        SecondaryDrawerItem earthItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.earth_item).withIcon(R.drawable.ic_earth);
+        SecondaryDrawerItem hybridItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.hybrid_item).withIcon(R.drawable.ic_google_earth);
+        SecondaryDrawerItem mapItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.map_item).withIcon(R.drawable.ic_map);
+        SecondaryDrawerItem exitItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.exit_item).withIcon(R.drawable.ic_exit_to_app);
+        Drawer drawer = new DrawerBuilder().withActivity(this).withAccountHeader(getAccount()).addDrawerItems(pointItem, routeItem, new DividerDrawerItem(), earthItem, hybridItem, mapItem, new DividerDrawerItem(), langItem, exitItem)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        Log.e("position", String.valueOf(position));
                         switch (position) {
-                            case 0: {
-                                break;
-                            }
                             case 1: {
                                 break;
                             }
                             case 2: {
-                                break;
-                            }
-                            case 3: {
+
                                 break;
                             }
                             case 4: {
+                                if (isMapReady)
+                                    mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                                break;
+                            }
+                            case 5: {
+                                if (isMapReady)
+                                    mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                                break;
+
+                            }
+                            case 6: {
+                                if (isMapReady)
+                                    mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                                break;
+                            }
+                            case 8: {
+                                showLangDialog();
                                 break;
                             }
                             default:
@@ -184,14 +234,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         return false;
                     }
                 }).build();
-        PrimaryDrawerItem pointItem = new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
-        PrimaryDrawerItem routeItem = new SecondaryDrawerItem().withName(R.string.route_item).withIcon(R.drawable.ic_routes);
-        PrimaryDrawerItem langItem = new SecondaryDrawerItem().withName(R.string.lang_item).withIcon(R.drawable.ic_routes);
-        PrimaryDrawerItem earthItem = new SecondaryDrawerItem().withName(R.string.earth_item).withIcon(R.drawable.ic_earth);
-        PrimaryDrawerItem hybridItem = new SecondaryDrawerItem().withName(R.string.hybrid_item).withIcon(R.drawable.ic_google_earth);
-        PrimaryDrawerItem mapItem = new SecondaryDrawerItem().withName(R.string.map_item).withIcon(R.drawable.ic_map);
-        PrimaryDrawerItem exitItem = new SecondaryDrawerItem().withName(R.string.exit_item).withIcon(R.drawable.ic_exit_to_app);
-        drawer.addItems(pointItem, routeItem, new DividerDrawerItem(), earthItem, hybridItem, mapItem, new DividerDrawerItem(), langItem, exitItem);
         return drawer;
     }
 
@@ -218,9 +260,29 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     CircleOptions circle = null;
     LatLng sydney = null;
 
+    public void showLangDialog() {
+        Log.e("here", "I am here");
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        builder.setTitle(getResources().getString(R.string.app_lang));
+        builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.rus), getResources().getString(R.string.ukr)}, 1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.setPositiveButton(getResources().getString(R.string.apply), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+        builder.show();
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        isMapReady = true;
         double x = getIntent().getDoubleExtra("x", 0);
         double y = getIntent().getDoubleExtra("y", 0);
         if (x != 0 && y != 0) {
