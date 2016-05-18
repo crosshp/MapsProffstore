@@ -6,12 +6,12 @@ import io.realm.RealmObject;
  * Created by Andrew on 18.05.2016.
  */
 public class Point extends RealmObject {
-    private float lng;
-    private float lat;
+    private double lng;
+    private double lat;
     private String name;
     private int id;
 
-    public Point(float lng, float lat, String name) {
+    public Point(double lat, double lng, String name) {
         this.lng = lng;
         this.lat = lat;
         this.name = name;
@@ -20,19 +20,19 @@ public class Point extends RealmObject {
     public Point() {
     }
 
-    public float getLng() {
+    public double getLng() {
         return lng;
     }
 
-    public void setLng(float lng) {
+    public void setLng(double lng) {
         this.lng = lng;
     }
 
-    public float getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public void setLat(float lat) {
+    public void setLat(double lat) {
         this.lat = lat;
     }
 

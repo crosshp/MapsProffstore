@@ -47,6 +47,7 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.proffstore.andrew.mapsproffstore.DataBase.DAO;
 import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
+import com.proffstore.andrew.mapsproffstore.Entity.Point;
 import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
 import com.proffstore.andrew.mapsproffstore.R;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
@@ -351,11 +352,20 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
+    public void initializeAllPoints() {
+        List<Point> points = dao.getAllPoints();
+        for (Point point : points) {
+            LatLng latLng = new LatLng(point.getLat(), point.getLng());
+            mMap.addMarker(new MarkerOptions().title(point.getName()).position(latLng));
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         isMapReady = true;
         initializeControlPoints();
+        initializeAllPoints();
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
@@ -429,16 +439,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                mMap.addMarker(new MarkerOptions().position(latLng).title("Marker in Sydney"));
-                Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, latLng) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext());
-                Intent intent = new Intent(getApplication(), MapsLayoutActivity.class);
-                PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, 0);
-                builder.setSmallIcon(R.drawable.common_plus_signin_btn_icon_light)
-                        .setContentInfo("Info")
-                        .setContentText("Content text")
-                        .setContentIntent(pendingIntent);
-                NotificationManagerCompat.from(getBaseContext()).notify(1, builder.build());
+                mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+                Point point = new Point(latLng.latitude, latLng.longitude, "marker");
+                dao.savePoint(point);
+//                Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, latLng) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
+
             }
         });
     }

@@ -18,17 +18,13 @@ public class DAO {
     RealmConfiguration realmConfig = null;
 
     public DAO(Context context) {
-        realmConfig = new RealmConfiguration.Builder(context).build();
+        realmConfig = new RealmConfiguration.Builder(context).deleteRealmIfMigrationNeeded().build();
     }
 
     public void saveControlPoint(ControlPoint controlPoint) {
         Realm realm = Realm.getInstance(realmConfig);
         realm.beginTransaction();
-        ControlPoint controlPoint1 = realm.createObject(ControlPoint.class);
-        controlPoint1.setLat(controlPoint.getLat());
-        controlPoint1.setLng(controlPoint.getLng());
-        controlPoint1.setName(controlPoint.getName());
-        controlPoint1.setRadius(controlPoint.getRadius());
+        realm.copyToRealm(controlPoint);
         realm.commitTransaction();
     }
 
