@@ -1,4 +1,4 @@
-package com.proffstore.andrew.mapsproffstore;
+package com.proffstore.andrew.mapsproffstore.Activity;
 
 import android.Manifest;
 import android.app.PendingIntent;
@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -45,6 +45,8 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
+import com.proffstore.andrew.mapsproffstore.R;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.ArrayList;
@@ -91,7 +93,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             public void onClick(View v) {
                 final boolean[] isPointView = {true};
                 final PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
-                AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
                 builder.setTitle(getResources().getString(R.string.display_mode));
                 View view = View.inflate(MapsLayoutActivity.this, R.layout.menu_point_layout, null);
                 builder.setView(view);
@@ -106,13 +108,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         }
                     }
                 });
-
                 builder.setNegativeButton(getResources().getString(R.string.cancel), null);
                 final AlertDialog alertDialog = builder.show();
 
                 final ListView pointsList = (ListView) view.findViewById(R.id.listView);
-                pointsList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-                pointsList.setItemsCanFocus(false);
                 final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.routesMenuContent);
 
                 pointsList.setAdapter(adapter);
@@ -185,6 +184,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                             isPointView[0] = false;
                             pointsList.setVisibility(View.GONE);
                             linearLayout.setVisibility(View.VISIBLE);
+                            builder.setMultiChoiceItems(null,null,null);
                         }
                     }
                 });
@@ -209,21 +209,20 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
     }
 
-    public List<String> getPointsName() {
-        List<String> strings = new ArrayList<>();
-        strings.add("Olol");
-        strings.add("Olol1");
-        strings.add("Olol2");
-        strings.add("Olol3");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
-        strings.add("Olol4");
+    public List<PointItem> getPointsName() {
+        List<PointItem> strings = new ArrayList<>();
+        strings.add(new PointItem("olo",false));
+        strings.add(new PointItem("olo1",false));
+        strings.add(new PointItem("olo2",false));
+        strings.add(new PointItem("olo3",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo4",false));
         return strings;
     }
 
@@ -380,7 +379,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                             .radius(Integer.valueOf(editRadius.getText().toString())).visible(true)
                                             .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
                                             .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner));
-                                    markerOptions[0] = new MarkerOptions().title(editName.getText().toString()).position(latLng);
+                                    markerOptions[0] = new MarkerOptions()
+                                            .title(editName.getText().toString())
+                                            .position(latLng)
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52));
                                     mMap.addCircle(circleKT[0]);
                                     mMap.addMarker(markerOptions[0]);
                                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
@@ -400,10 +402,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         sydney = new LatLng(-34, 151);
         LatLng sydney1 = new LatLng(-35, 152);
         LatLng sydney2 = new LatLng(-20, 12);
-        final MarkerOptions markerOptions = new MarkerOptions().position(sydney).title("Marker in Sydney");
+        final MarkerOptions markerOptions = new MarkerOptions().position(sydney).icon(BitmapDescriptorFactory.fromResource(R.drawable.dog48)).title("Marker in Sydney");
         mMap.addMarker(markerOptions);
-        mMap.addMarker(new MarkerOptions().position(sydney1).title("Marker in new Sydney"));
-        mMap.addMarker(new MarkerOptions().position(sydney1).title("Marker in new Sydney"));
+        mMap.addMarker(new MarkerOptions().position(sydney1).icon(BitmapDescriptorFactory.fromResource(R.drawable.bus48)).title("Marker in new Sydney"));
+        mMap.addMarker(new MarkerOptions().position(sydney1).icon(BitmapDescriptorFactory.fromResource(R.drawable.car48)).title("Marker in new Sydney"));
         mMap.addPolyline(new PolylineOptions().add(sydney).add(sydney1).add(sydney2));
         circle = new CircleOptions().strokeWidth(3).center(sydney).radius(5000).visible(true).fillColor(ContextCompat.getColor(this, R.color.colorMarker)).strokeColor(ContextCompat.getColor(this, R.color.colorMarkerCorner));
         mMap.addCircle(circle);

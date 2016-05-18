@@ -15,14 +15,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key" />
 
-        <activity android:name=".MapsLayoutActivity">
+        <activity android:name=".Activity.MapsLayoutActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapsLayoutActivity$MagicAppRestart"/>
+        <activity android:name=".Activity.MapsLayoutActivity$MagicAppRestart"/>
     </application>
 
 </manifest>

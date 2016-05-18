@@ -1,4 +1,4 @@
-package com.proffstore.andrew.mapsproffstore;
+package com.proffstore.andrew.mapsproffstore.REST;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -9,6 +9,8 @@ import com.loopj.android.http.RequestParams;
  */
 public class ServerRestClient {
     private static final String BASE_URL = "https://habrahabr.ru/post/181338/";
+    public static final String GET_USER_URL = "get/";
+    public static final String AUTH_URL = "get/";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 
