@@ -5,7 +5,6 @@ import android.content.Context;
 import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
@@ -25,7 +24,11 @@ public class DAO {
     public void saveControlPoint(ControlPoint controlPoint) {
         Realm realm = Realm.getInstance(realmConfig);
         realm.beginTransaction();
-        realm.copyToRealm(controlPoint);
+        ControlPoint controlPoint1 = realm.createObject(ControlPoint.class);
+        controlPoint1.setLat(controlPoint.getLat());
+        controlPoint1.setLng(controlPoint.getLng());
+        controlPoint1.setName(controlPoint.getName());
+        controlPoint1.setRadius(controlPoint.getRadius());
         realm.commitTransaction();
     }
 
@@ -39,13 +42,13 @@ public class DAO {
     public List<ControlPoint> getAllControlPoints() {
         Realm realm = Realm.getInstance(realmConfig);
         RealmResults<ControlPoint> realmResults = realm.where(ControlPoint.class).findAll();
-        return new ArrayList<ControlPoint>();
+        return realmResults.subList(0, realmResults.size());
     }
 
     public List<Point> getAllPoints() {
         Realm realm = Realm.getInstance(realmConfig);
         RealmResults<Point> realmResults = realm.where(Point.class).findAll();
-        return new ArrayList<Point>();
+        return realmResults.subList(0, realmResults.size());
     }
 
     public Point getPointById(int id) {

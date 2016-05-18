@@ -1,5 +1,7 @@
 package com.proffstore.andrew.mapsproffstore.Entity;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import io.realm.RealmObject;
 
 /**
@@ -7,16 +9,15 @@ import io.realm.RealmObject;
  */
 public class ControlPoint extends RealmObject {
     private String name;
-    private float lat;
-    private float lng;
-    private float radius;
+    private double lat;
+    private double lng;
+    private double radius;
     private int id;
 
     public ControlPoint() {
     }
 
-    public ControlPoint(String name, float lat, float lng, float radius) {
-
+    public ControlPoint(String name, double lat,double lng, double radius) {
         this.name = name;
         this.lat = lat;
         this.lng = lng;
@@ -31,27 +32,27 @@ public class ControlPoint extends RealmObject {
         this.name = name;
     }
 
-    public float getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public void setLat(float lat) {
+    public void setLat(double lat) {
         this.lat = lat;
     }
 
-    public float getLng() {
+    public double getLng() {
         return lng;
     }
 
-    public void setLng(float lng) {
+    public void setLng(double lng) {
         this.lng = lng;
     }
 
-    public float getRadius() {
+    public double getRadius() {
         return radius;
     }
 
-    public void setRadius(float radius) {
+    public void setRadius(double radius) {
         this.radius = radius;
     }
 }

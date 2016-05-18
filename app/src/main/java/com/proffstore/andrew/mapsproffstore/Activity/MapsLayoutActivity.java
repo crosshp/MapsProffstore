@@ -45,6 +45,8 @@ import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.proffstore.andrew.mapsproffstore.DataBase.DAO;
+import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
 import com.proffstore.andrew.mapsproffstore.R;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
@@ -66,6 +68,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     private SharedPreferences sharedPreferences = null;
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
+    DAO dao = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         if (lang.equals("ru")) {
             isRussian = true;
         }
+        dao = new DAO(getBaseContext());
         Locale locale = new Locale(lang, cntr);
         Locale.setDefault(locale);
         Configuration config = new Configuration();
@@ -184,7 +188,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                             isPointView[0] = false;
                             pointsList.setVisibility(View.GONE);
                             linearLayout.setVisibility(View.VISIBLE);
-                            builder.setMultiChoiceItems(null,null,null);
+                            builder.setMultiChoiceItems(null, null, null);
                         }
                     }
                 });
@@ -211,18 +215,18 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
     public List<PointItem> getPointsName() {
         List<PointItem> strings = new ArrayList<>();
-        strings.add(new PointItem("olo",false));
-        strings.add(new PointItem("olo1",false));
-        strings.add(new PointItem("olo2",false));
-        strings.add(new PointItem("olo3",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
-        strings.add(new PointItem("olo4",false));
+        strings.add(new PointItem("olo", false));
+        strings.add(new PointItem("olo1", false));
+        strings.add(new PointItem("olo2", false));
+        strings.add(new PointItem("olo3", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
+        strings.add(new PointItem("olo4", false));
         return strings;
     }
 
@@ -334,20 +338,24 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         builder.show();
     }
 
-    public void initializePoints() {
-
+    public void initializeControlPoints() {
+        List<ControlPoint> controlPoints = dao.getAllControlPoints();
+        for (ControlPoint controlPoint : controlPoints) {
+            LatLng latLng = new LatLng(controlPoint.getLat(), controlPoint.getLng());
+            mMap.addMarker(new MarkerOptions().title(controlPoint.getName()).position(latLng)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52)));
+            mMap.addCircle(new CircleOptions().center(latLng).radius(controlPoint.getRadius())
+                    .strokeWidth(3)
+                    .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
+                    .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner)));
+        }
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         isMapReady = true;
-        double x = getIntent().getDoubleExtra("x", 0);
-        double y = getIntent().getDoubleExtra("y", 0);
-        if (x != 0 && y != 0) {
-            LatLng intentLatLng = new LatLng(x, y);
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(intentLatLng, 15));
-        }
+        initializeControlPoints();
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
@@ -370,7 +378,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                             @Override
                             public void onClick(View view) {
                                 boolean closeDialog = false;
-                                Log.e("Dialog","I am here");
+                                Log.e("Dialog", "I am here");
                                 // TODO Do something
                                 if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
                                     Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
@@ -386,6 +394,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                     mMap.addCircle(circleKT[0]);
                                     mMap.addMarker(markerOptions[0]);
                                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                                    ControlPoint controlPoint = new ControlPoint(editName.getText().toString(),
+                                            circleKT[0].getCenter().latitude,
+                                            circleKT[0].getCenter().longitude,
+                                            circleKT[0].getRadius());
+                                    dao.saveControlPoint(controlPoint);
                                     closeDialog = true;
                                 }
                                 if (closeDialog) {
@@ -399,21 +412,19 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
 
-        sydney = new LatLng(-34, 151);
-        LatLng sydney1 = new LatLng(-35, 152);
-        LatLng sydney2 = new LatLng(-20, 12);
-        final MarkerOptions markerOptions = new MarkerOptions().position(sydney).icon(BitmapDescriptorFactory.fromResource(R.drawable.dog48)).title("Marker in Sydney");
-        mMap.addMarker(markerOptions);
-        mMap.addMarker(new MarkerOptions().position(sydney1).icon(BitmapDescriptorFactory.fromResource(R.drawable.bus48)).title("Marker in new Sydney"));
-        mMap.addMarker(new MarkerOptions().position(sydney1).icon(BitmapDescriptorFactory.fromResource(R.drawable.car48)).title("Marker in new Sydney"));
-        mMap.addPolyline(new PolylineOptions().add(sydney).add(sydney1).add(sydney2));
-        circle = new CircleOptions().strokeWidth(3).center(sydney).radius(5000).visible(true).fillColor(ContextCompat.getColor(this, R.color.colorMarker)).strokeColor(ContextCompat.getColor(this, R.color.colorMarkerCorner));
-        mMap.addCircle(circle);
 
-        Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, sydney1) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
+        // Tochka !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+        //       Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, sydney1) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
+
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
         mMap.setMyLocationEnabled(true);
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -422,8 +433,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, latLng) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext());
                 Intent intent = new Intent(getApplication(), MapsLayoutActivity.class);
-                intent.putExtra("x", latLng.latitude);
-                intent.putExtra("y", latLng.longitude);
                 PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, 0);
                 builder.setSmallIcon(R.drawable.common_plus_signin_btn_icon_light)
                         .setContentInfo("Info")
