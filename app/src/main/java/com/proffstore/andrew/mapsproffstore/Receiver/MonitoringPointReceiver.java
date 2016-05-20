@@ -58,7 +58,7 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
         for (int i = 0; i < point.getControlPoints().size(); i++) {
             LatLng latLngControlPoint = new LatLng(point.getControlPoints().get(i).getLat(), point.getControlPoints().get(i).getLng());
             if (SphericalUtil.computeDistanceBetween(latLngPoint, latLngControlPoint) > point.getControlPoints().get(i).getRadius()) {
-                showOutNotification(point.getControlPoints().get(i), point);
+                showOutNotification(point.getControlPoints().get(i), point, MapsLayoutActivity.notificationId++);
                 point.getControlPoints().remove(i);
             }
         }
@@ -95,13 +95,14 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
         }
     }
 
-    public void showOutNotification(ControlPoint controlPoint, Point point) {
+    public void showOutNotification(ControlPoint controlPoint, Point point, int i) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.marker52);
         String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
                 context.getString(R.string.control_exit) + controlPoint.getName();
         builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));
-        NotificationManagerCompat.from(context).notify(1, builder.build());
+        builder.setContentTitle(text);
+        NotificationManagerCompat.from(context).notify(i, builder.build());
     }
 }
 
