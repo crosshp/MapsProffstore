@@ -1,20 +1,21 @@
 package com.proffstore.andrew.mapsproffstore.Activity;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -34,9 +35,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.SphericalUtil;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -50,6 +50,7 @@ import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
 import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
 import com.proffstore.andrew.mapsproffstore.R;
+import com.proffstore.andrew.mapsproffstore.Receiver.MonitoringPointReceiver;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     public MapsLayoutActivity() {
     }
 
+    public static int notificationId = 0;
     private GoogleMap mMap;
     SupportMapFragment mapFragment = null;
     private static boolean isRussian = true;
@@ -70,10 +72,29 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
     DAO dao = null;
+    MonitoringPointReceiver receiver = null;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final AlarmManager am = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent("Intent MY");
+        final PendingIntent pi = PendingIntent.getBroadcast(getBaseContext(), 0, i, 0);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 5, pi); // Millisec * Second * Minute
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("Intent MY");
+        receiver = new MonitoringPointReceiver();
+        registerReceiver(receiver, filter);
+
         sharedPreferences = getPreferences(MODE_PRIVATE);
         String lang = sharedPreferences.getString("lang", "ru");
         String cntr = sharedPreferences.getString("country", "RUS");
@@ -357,8 +378,16 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         for (Point point : points) {
             LatLng latLng = new LatLng(point.getLat(), point.getLng());
             mMap.addMarker(new MarkerOptions().title(point.getName()).position(latLng));
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    marker.setPosition(new LatLng(0, 0));
+                    return true;
+                }
+            });
         }
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {

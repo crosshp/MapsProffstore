@@ -27,7 +27,15 @@ public class ServerApi {
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
             }
         });
-        return new ArrayList<>();
+
+
+        ArrayList<Point> list = new ArrayList<>();
+        list.add(new Point(0, 0, "l1"));
+        list.add(new Point(1, 1, "l2"));
+        list.add(new Point(2, 2, "l3"));
+        list.add(new Point(3, 4, "l4"));
+        list.add(new Point(5, 5, "l5"));
+        return list;
     }
 
     public static User authUser(String login, String pass) {

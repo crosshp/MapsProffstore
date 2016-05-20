@@ -21,6 +21,10 @@ public class DAO {
         realmConfig = new RealmConfiguration.Builder(context).deleteRealmIfMigrationNeeded().build();
     }
 
+    public Realm getRealm() {
+        return Realm.getInstance(realmConfig);
+    }
+
     public void saveControlPoint(ControlPoint controlPoint) {
         Realm realm = Realm.getInstance(realmConfig);
         realm.beginTransaction();
@@ -74,4 +78,28 @@ public class DAO {
         results.deleteFromRealm(id);
         realm.commitTransaction();
     }
+
+    public void deleteAllPoints() {
+        Realm realm = Realm.getInstance(realmConfig);
+        RealmResults<Point> results = realm.where(Point.class).findAll();
+        realm.beginTransaction();
+        results.deleteAllFromRealm();
+        realm.commitTransaction();
+    }
+
+    public void savePoint(List<Point> allPoints) {
+        Realm realm = Realm.getInstance(realmConfig);
+        realm.beginTransaction();
+        realm.copyToRealm(allPoints);
+        realm.commitTransaction();
+    }
+
+    public void addControlPoint(Point point, ControlPoint controlPoint){
+        Realm realm = Realm.getInstance(realmConfig);
+        realm.beginTransaction();
+        point.addControlPoint(controlPoint);
+        realm.copyToRealm(point);
+        realm.commitTransaction();
+    }
+
 }

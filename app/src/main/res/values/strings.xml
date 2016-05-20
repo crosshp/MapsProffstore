@@ -28,6 +28,12 @@
     <string name="radius_kt">Радиус контрольной точки (м)</string>
     <string name="edit_field">Заполните все поля!</string>
 
+
+    <string name="attention_point">Внимание! Точка:</string>
+    <string name="control_entry">вошла в зону Контрольной точки:</string>
+    <string name="control_exit">покинула зону Контрольной точки:</string>
+
+
     <string-array name="map_types">
         <item>Карта</item>
         <item>Спутник</item>
