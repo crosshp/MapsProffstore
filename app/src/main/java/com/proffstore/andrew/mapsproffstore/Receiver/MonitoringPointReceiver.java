@@ -75,24 +75,20 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
                     point.addControlPoint(controlPoint);
                     realm.commitTransaction();
                     Log.e("cp1", String.valueOf(point.getControlPoints().size()));
-                    showNotification(point.getControlPoints(), point, MapsLayoutActivity.notificationId++);
+                    showNotification(controlPoint, point, MapsLayoutActivity.notificationId++);
                 }
             }
         }
     }
 
-    public void showNotification(List<ControlPoint> controlPointList, Point point, int i) {
-        if (!controlPointList.isEmpty()) {
-            for (ControlPoint controlPoint : controlPointList) {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-                builder.setSmallIcon(R.drawable.marker52);
-                String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
-                        context.getString(R.string.control_entry) + controlPoint.getName();
-                builder.setContentTitle(text);
-                builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));
-                NotificationManagerCompat.from(context).notify(i, builder.build());
-            }
-        }
+    public void showNotification(ControlPoint controlPoint, Point point, int i) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        builder.setSmallIcon(R.drawable.marker52);
+        String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
+                context.getString(R.string.control_entry) + controlPoint.getName();
+        builder.setContentTitle(text);
+        builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));
+        NotificationManagerCompat.from(context).notify(i, builder.build());
     }
 
     public void showOutNotification(ControlPoint controlPoint, Point point, int i) {

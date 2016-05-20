@@ -10,7 +10,6 @@ public class ControlPoint extends RealmObject {
     private double lat;
     private double lng;
     private double radius;
-    private double radius1;
 
     public ControlPoint() {
     }
