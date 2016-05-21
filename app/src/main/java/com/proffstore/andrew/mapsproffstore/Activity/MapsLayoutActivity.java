@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -26,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -50,6 +52,7 @@ import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
 import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
 import com.proffstore.andrew.mapsproffstore.R;
+import com.proffstore.andrew.mapsproffstore.REST.Synhronize;
 import com.proffstore.andrew.mapsproffstore.Receiver.MonitoringPointReceiver;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
@@ -118,7 +121,9 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             @Override
             public void onClick(View v) {
                 final boolean[] isPointView = {true};
-                final PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
+                List<PointItem> pointItems = getPointsItem();
+                final PointAdapter adapter = new PointAdapter(getBaseContext(), pointItems);
+
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
                 builder.setTitle(getResources().getString(R.string.display_mode));
                 View view = View.inflate(MapsLayoutActivity.this, R.layout.menu_point_layout, null);
@@ -136,7 +141,28 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 });
                 builder.setNegativeButton(getResources().getString(R.string.cancel), null);
                 final AlertDialog alertDialog = builder.show();
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
 
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                        negative.setFocusable(true);
+                        negative.setFocusableInTouchMode(true);
+                        negative.requestFocus();
+                    }
+                });
+
+                Spinner spinner = (Spinner) view.findViewById(R.id.spinner);
+                spinner.setFocusable(true);
+                spinner.setFocusableInTouchMode(true);
+                spinner.requestFocus();
+                List<String> lis = new ArrayList<String>();
+                for (PointItem pointItem : pointItems) {
+                    lis.add(pointItem.getName());
+                }
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getBaseContext(),
+                        android.R.layout.simple_spinner_item, lis);
+                spinner.setAdapter(arrayAdapter);
                 final ListView pointsList = (ListView) view.findViewById(R.id.listView);
                 final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.routesMenuContent);
 
@@ -204,7 +230,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                             isPointView[0] = true;
                             pointsList.setVisibility(View.VISIBLE);
                             linearLayout.setVisibility(View.GONE);
-                            PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsName());
+                            PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsItem());
                             pointsList.setAdapter(adapter);
                         } else {
                             isPointView[0] = false;
@@ -235,20 +261,25 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
     }
 
-    public List<PointItem> getPointsName() {
+
+    public List<String> getPointsName() {
+        Synhronize.synhronizePoints(getBaseContext(), null);
+        List<Point> pointList = dao.getAllPoints();
+        List<String> strings = new ArrayList<>();
+        for (Point point : pointList) {
+            strings.add(point.getName());
+        }
+        return strings;
+    }
+
+    public List<PointItem> getPointsItem() {
+        Synhronize.synhronizePoints(getBaseContext(), null);
+        List<Point> pointList = dao.getAllPoints();
         List<PointItem> strings = new ArrayList<>();
-        strings.add(new PointItem("olo", false));
-        strings.add(new PointItem("olo1", false));
-        strings.add(new PointItem("olo2", false));
-        strings.add(new PointItem("olo3", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
-        strings.add(new PointItem("olo4", false));
+        for (Point point : pointList) {
+            PointItem pointItem = new PointItem(point.getName(), false);
+            strings.add(pointItem);
+        }
         return strings;
     }
 
@@ -267,10 +298,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                         Log.e("position", String.valueOf(position));
                         switch (position) {
                             case 1: {
+                                showDialogToPoints();
                                 break;
                             }
                             case 2: {
-
+                                showDialogToRoutes();
                                 break;
                             }
                             case 4: {
@@ -300,6 +332,125 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                     }
                 }).build();
         return drawer;
+    }
+
+    public void showDialogToPoints() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        builder.setTitle(getResources().getString(R.string.show_points));
+        builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+        List<String> list = getPointsName();
+        boolean[] listChecked = new boolean[list.size()];
+        for (boolean isChecked : listChecked) {
+            isChecked = false;
+        }
+        builder.setMultiChoiceItems(list.toArray(new String[]{}), listChecked, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+
+            }
+        });
+        final AlertDialog alertDialog = builder.show();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setFocusable(true);
+                negative.setFocusableInTouchMode(true);
+                negative.requestFocus();
+            }
+        });
+    }
+
+
+    public void showDialogToRoutes() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        builder.setTitle(getResources().getString(R.string.show_points));
+        builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        View view = View.inflate(MapsLayoutActivity.this, R.layout.route_content, null);
+        builder.setView(view);
+        Spinner spinner = (Spinner) view.findViewById(R.id.spinner);
+        spinner.setFocusable(true);
+        spinner.setFocusableInTouchMode(true);
+        spinner.requestFocus();
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getBaseContext(),
+                android.R.layout.simple_spinner_item, getPointsName());
+        spinner.setAdapter(arrayAdapter);
+        builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+        final EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
+        editShowStart.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    Calendar now = Calendar.getInstance();
+                    DatePickerDialog dpd = DatePickerDialog.newInstance(
+                            new DatePickerDialog.OnDateSetListener() {
+                                @Override
+                                public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    stringBuilder.append(dayOfMonth);
+                                    stringBuilder.append("/");
+                                    stringBuilder.append(monthOfYear + 1);
+                                    stringBuilder.append("/");
+                                    stringBuilder.append(year);
+                                    editShowStart.setText(stringBuilder);
+                                }
+                            },
+                            now.get(Calendar.YEAR),
+                            now.get(Calendar.MONTH),
+                            now.get(Calendar.DAY_OF_MONTH)
+                    );
+                    dpd.show(getFragmentManager(), "DatepickerdialogCalendar");
+                }
+            }
+        });
+        final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
+        editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    Calendar now = Calendar.getInstance();
+                    DatePickerDialog dpd = DatePickerDialog.newInstance(
+                            new DatePickerDialog.OnDateSetListener() {
+                                @Override
+                                public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                                    StringBuilder stringBuilder = new StringBuilder();
+                                    stringBuilder.append(dayOfMonth);
+                                    stringBuilder.append("/");
+                                    stringBuilder.append(monthOfYear + 1);
+                                    stringBuilder.append("/");
+                                    stringBuilder.append(year);
+                                    editShowFinish.setText(stringBuilder);
+                                }
+                            },
+                            now.get(Calendar.YEAR),
+                            now.get(Calendar.MONTH),
+                            now.get(Calendar.DAY_OF_MONTH)
+                    );
+                    dpd.show(getFragmentManager(), "Datepickerdialog");
+                }
+            }
+        });
+        final AlertDialog alertDialog = builder.show();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setFocusable(true);
+                negative.setFocusableInTouchMode(true);
+                negative.requestFocus();
+            }
+        });
     }
 
     // Override volume buttons

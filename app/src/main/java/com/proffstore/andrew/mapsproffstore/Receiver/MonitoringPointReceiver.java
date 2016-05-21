@@ -17,7 +17,6 @@ import com.proffstore.andrew.mapsproffstore.R;
 import com.proffstore.andrew.mapsproffstore.REST.Synhronize;
 
 import java.util.List;
-
 import io.realm.Realm;
 
 /**
