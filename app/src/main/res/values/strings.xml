@@ -33,6 +33,10 @@
     <string name="control_entry">вошла в зону Контрольной точки:</string>
     <string name="control_exit">покинула зону Контрольной точки:</string>
 
+    <string name="start_route">Начало маршрута!</string>
+    <string name="end_route">Конец маршрута!</string>
+    <string name="error_point">Выберите точку!</string>
+
 
     <string-array name="map_types">
         <item>Карта</item>

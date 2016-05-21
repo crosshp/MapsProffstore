@@ -27,4 +27,5 @@ public class Synhronize {
            // dao.savePoint(list);
         }*/
     }
+
 }

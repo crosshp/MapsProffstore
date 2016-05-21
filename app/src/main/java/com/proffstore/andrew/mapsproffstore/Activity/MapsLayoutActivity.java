@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -19,14 +20,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -39,6 +37,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -48,11 +48,12 @@ import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.proffstore.andrew.mapsproffstore.DataBase.DAO;
+import com.proffstore.andrew.mapsproffstore.Entity.AppLatLng;
 import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
-import com.proffstore.andrew.mapsproffstore.Entity.PointItem;
+import com.proffstore.andrew.mapsproffstore.Entity.Route;
 import com.proffstore.andrew.mapsproffstore.R;
-import com.proffstore.andrew.mapsproffstore.REST.Synhronize;
+import com.proffstore.andrew.mapsproffstore.REST.ServerApi;
 import com.proffstore.andrew.mapsproffstore.Receiver.MonitoringPointReceiver;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
@@ -120,126 +121,31 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final boolean[] isPointView = {true};
-                List<PointItem> pointItems = getPointsItem();
-                final PointAdapter adapter = new PointAdapter(getBaseContext(), pointItems);
-
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
                 builder.setTitle(getResources().getString(R.string.display_mode));
-                View view = View.inflate(MapsLayoutActivity.this, R.layout.menu_point_layout, null);
-                builder.setView(view);
-                builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+                final boolean[] isPointShow = {true};
+                builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.show_points), getResources().getString(R.string.show_routes)}, 0, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (isPointView[0]) {
-                            List<Integer> pointsIndex = adapter.getPointsIndex();
-                            for (Integer point : pointsIndex) {
-                                Log.e("point", String.valueOf(point));
-                            }
-                        }
-                    }
-                });
-                builder.setNegativeButton(getResources().getString(R.string.cancel), null);
-                final AlertDialog alertDialog = builder.show();
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
-
-                    @Override
-                    public void onShow(DialogInterface dialog) {
-                        Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                        negative.setFocusable(true);
-                        negative.setFocusableInTouchMode(true);
-                        negative.requestFocus();
-                    }
-                });
-
-                Spinner spinner = (Spinner) view.findViewById(R.id.spinner);
-                spinner.setFocusable(true);
-                spinner.setFocusableInTouchMode(true);
-                spinner.requestFocus();
-                List<String> lis = new ArrayList<String>();
-                for (PointItem pointItem : pointItems) {
-                    lis.add(pointItem.getName());
-                }
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getBaseContext(),
-                        android.R.layout.simple_spinner_item, lis);
-                spinner.setAdapter(arrayAdapter);
-                final ListView pointsList = (ListView) view.findViewById(R.id.listView);
-                final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.routesMenuContent);
-
-                pointsList.setAdapter(adapter);
-
-                final EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
-                editShowStart.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        if (hasFocus) {
-                            Calendar now = Calendar.getInstance();
-                            DatePickerDialog dpd = DatePickerDialog.newInstance(
-                                    new DatePickerDialog.OnDateSetListener() {
-                                        @Override
-                                        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-                                            StringBuilder stringBuilder = new StringBuilder();
-                                            stringBuilder.append(dayOfMonth);
-                                            stringBuilder.append("/");
-                                            stringBuilder.append(monthOfYear + 1);
-                                            stringBuilder.append("/");
-                                            stringBuilder.append(year);
-                                            editShowStart.setText(stringBuilder);
-                                        }
-                                    },
-                                    now.get(Calendar.YEAR),
-                                    now.get(Calendar.MONTH),
-                                    now.get(Calendar.DAY_OF_MONTH)
-                            );
-                            dpd.show(getFragmentManager(), "DatepickerdialogCalendar");
-                        }
-                    }
-                });
-                final EditText editShowFinish = (EditText) view.findViewById(R.id.editShowFinish);
-                editShowFinish.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        if (hasFocus) {
-                            Calendar now = Calendar.getInstance();
-                            DatePickerDialog dpd = DatePickerDialog.newInstance(
-                                    new DatePickerDialog.OnDateSetListener() {
-                                        @Override
-                                        public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-                                            StringBuilder stringBuilder = new StringBuilder();
-                                            stringBuilder.append(dayOfMonth);
-                                            stringBuilder.append("/");
-                                            stringBuilder.append(monthOfYear + 1);
-                                            stringBuilder.append("/");
-                                            stringBuilder.append(year);
-                                            editShowFinish.setText(stringBuilder);
-                                        }
-                                    },
-                                    now.get(Calendar.YEAR),
-                                    now.get(Calendar.MONTH),
-                                    now.get(Calendar.DAY_OF_MONTH)
-                            );
-                            dpd.show(getFragmentManager(), "Datepickerdialog");
-                        }
-                    }
-                });
-                RadioButton radioButtonPoints = (RadioButton) view.findViewById(R.id.radioButtonPoints);
-                radioButtonPoints.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (isChecked) {
-                            isPointView[0] = true;
-                            pointsList.setVisibility(View.VISIBLE);
-                            linearLayout.setVisibility(View.GONE);
-                            PointAdapter adapter = new PointAdapter(getBaseContext(), getPointsItem());
-                            pointsList.setAdapter(adapter);
+                        if (which == 0) {
+                            isPointShow[0] = true;
                         } else {
-                            isPointView[0] = false;
-                            pointsList.setVisibility(View.GONE);
-                            linearLayout.setVisibility(View.VISIBLE);
-                            builder.setMultiChoiceItems(null, null, null);
+                            isPointShow[0] = false;
                         }
                     }
                 });
+                builder.setPositiveButton(getResources().getString(R.string.apply), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (isPointShow[0]) {
+                            showDialogToPoints();
+                        } else {
+                            showDialogToRoutes();
+                        }
+                    }
+                });
+                builder.show();
             }
         });
         final Drawer drawer = initializeDrawer();
@@ -257,13 +163,9 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 }
             }
         });
-
-
     }
 
-
     public List<String> getPointsName() {
-        Synhronize.synhronizePoints(getBaseContext(), null);
         List<Point> pointList = dao.getAllPoints();
         List<String> strings = new ArrayList<>();
         for (Point point : pointList) {
@@ -272,16 +174,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         return strings;
     }
 
-    public List<PointItem> getPointsItem() {
-        Synhronize.synhronizePoints(getBaseContext(), null);
-        List<Point> pointList = dao.getAllPoints();
-        List<PointItem> strings = new ArrayList<>();
-        for (Point point : pointList) {
-            PointItem pointItem = new PointItem(point.getName(), false);
-            strings.add(pointItem);
-        }
-        return strings;
-    }
 
     private Drawer initializeDrawer() {
         SecondaryDrawerItem pointItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
@@ -334,29 +226,73 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         return drawer;
     }
 
+    public void showPointsOnMap(List<Point> points) {
+        mMap.clear();
+        initializeControlPoints();
+        for (Point point : points) {
+            LatLng latLng = new LatLng(point.getLat(), point.getLng());
+            mMap.addMarker(new MarkerOptions().title(point.getName()).position(latLng));
+            mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker) {
+                    marker.setPosition(new LatLng(0, 0));
+                    return true;
+                }
+            });
+        }
+    }
+
+    public void showRouteOnMap(Route route) {
+        mMap.clear();
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .width(2)
+                .color(Color.BLUE).geodesic(true);
+        for (AppLatLng appLatLng : route.getPoints()) {
+            polylineOptions.add(appLatLng.getLatLng());
+        }
+        mMap.addPolyline(polylineOptions);
+        MarkerOptions startMarker = new MarkerOptions().position(route.getPoints().get(0).getLatLng())
+                .title(getResources().getString(R.string.start_route) + "\n" + getResources().getString(R.string.show_points) + route.getName() + "\n" + getResources().getString(R.string.show_points) + route.getDistance());
+        MarkerOptions endMarker = new MarkerOptions().position(route.getPoints().get(route.getPoints().size() - 1).getLatLng())
+                .title(getResources().getString(R.string.end_route));
+        mMap.addMarker(startMarker).showInfoWindow();
+        mMap.addMarker(endMarker).showInfoWindow();
+
+    }
+
+
     public void showDialogToPoints() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        final List<Point> indexes = new ArrayList<>();
         builder.setTitle(getResources().getString(R.string.show_points));
-        builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
         builder.setNegativeButton(getResources().getString(R.string.cancel), null);
-        List<String> list = getPointsName();
+        final List<Point> list = dao.getAllPoints();
         boolean[] listChecked = new boolean[list.size()];
         for (boolean isChecked : listChecked) {
             isChecked = false;
         }
-        builder.setMultiChoiceItems(list.toArray(new String[]{}), listChecked, new DialogInterface.OnMultiChoiceClickListener() {
+        List<String> pointsName = new ArrayList<>();
+        for (Point point : list) {
+            pointsName.add(point.getName());
+        }
+        builder.setMultiChoiceItems(pointsName.toArray(new String[]{}), listChecked, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-
+                if (isChecked) {
+                    indexes.add(list.get(which));
+                } else {
+                    indexes.remove(list.get(which));
+                }
+            }
+        });
+        builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                showPointsOnMap(indexes);
             }
         });
         final AlertDialog alertDialog = builder.show();
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
-
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
                 Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
@@ -369,13 +305,21 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
 
     public void showDialogToRoutes() {
+        final Point[] resultPoint = {null};
         final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
-        builder.setTitle(getResources().getString(R.string.show_points));
+        builder.setTitle(getResources().getString(R.string.show_routes));
         builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                if (resultPoint[0] != null) {
+                    Route route = ServerApi.getRoute(resultPoint[0], null);
+                    showRouteOnMap(route);
+                } else {
+                    Toast.makeText(getBaseContext(), getResources().getString(R.string.error_point), Toast.LENGTH_SHORT).show();
+                }
             }
         });
+        final List<Point> list = dao.getAllPoints();
         View view = View.inflate(MapsLayoutActivity.this, R.layout.route_content, null);
         builder.setView(view);
         Spinner spinner = (Spinner) view.findViewById(R.id.spinner);
@@ -385,6 +329,17 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getBaseContext(),
                 android.R.layout.simple_spinner_item, getPointsName());
         spinner.setAdapter(arrayAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                resultPoint[0] = list.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                resultPoint[0] = list.get(0);
+            }
+        });
         builder.setNegativeButton(getResources().getString(R.string.cancel), null);
         final EditText editShowStart = (EditText) view.findViewById(R.id.editShowStart);
         editShowStart.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -441,7 +396,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             }
         });
         final AlertDialog alertDialog = builder.show();
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener(){
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
             @Override
             public void onShow(DialogInterface dialog) {
@@ -473,8 +428,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         return true;
     }
 
-    CircleOptions circle = null;
-    LatLng sydney = null;
 
     public void showLangDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
@@ -494,7 +447,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             public void onClick(DialogInterface dialog, int which) {
                 sharedPreferences = getPreferences(MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                Toast.makeText(getBaseContext(), "isRussian = " + String.valueOf(isRussian), Toast.LENGTH_SHORT).show();
                 if (isRussian) {
                     editor.putString("lang", "ru");
                     editor.putString("country", "RUS");
@@ -601,20 +553,9 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 alertDialog.show();
             }
         });
-
-
-        // Tochka !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-        //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-
-        //       Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, sydney1) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
-
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
         mMap.setMyLocationEnabled(true);
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -622,8 +563,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
                 Point point = new Point(latLng.latitude, latLng.longitude, "marker");
                 dao.savePoint(point);
-//                Toast.makeText(getApplicationContext(), String.valueOf(SphericalUtil.computeDistanceBetween(sydney, latLng) <= circle.getRadius()), Toast.LENGTH_SHORT).show();
-
             }
         });
     }

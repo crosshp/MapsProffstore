@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
+import com.proffstore.andrew.mapsproffstore.Entity.Route;
 
 import java.util.List;
 
@@ -94,12 +95,14 @@ public class DAO {
         realm.commitTransaction();
     }
 
-    public void addControlPoint(Point point, ControlPoint controlPoint){
+    public void addControlPoint(Point point, ControlPoint controlPoint) {
         Realm realm = Realm.getInstance(realmConfig);
         realm.beginTransaction();
         point.addControlPoint(controlPoint);
         realm.copyToRealm(point);
         realm.commitTransaction();
     }
+
+
 
 }
