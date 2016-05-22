@@ -74,14 +74,13 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     SupportMapFragment mapFragment = null;
     private static boolean isRussian = true;
     boolean isMapReady = false;
+    MapsLayoutActivity activity = this;
     private SharedPreferences sharedPreferences = null;
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
     DAO dao = null;
     MonitoringPointReceiver receiver = null;
     List<ControlPoint> controlPoints = null;
-    List<Circle> circleList = new ArrayList<>();
-    List<Marker> markerControlPointList = new ArrayList<>();
 
     @Override
     protected void onDestroy() {
@@ -182,13 +181,14 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
 
     private Drawer initializeDrawer() {
         SecondaryDrawerItem pointItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
+        SecondaryDrawerItem yandexItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.yandex_map).withIcon(R.drawable.yandex50);
         SecondaryDrawerItem routeItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.route_item).withIcon(R.drawable.ic_routes);
-        SecondaryDrawerItem langItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.lang_item).withIcon(R.drawable.ic_routes);
+        SecondaryDrawerItem langItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.lang_item).withIcon(R.drawable.ic_language_black_36dp);
         SecondaryDrawerItem earthItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.earth_item).withIcon(R.drawable.ic_earth);
         SecondaryDrawerItem hybridItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.hybrid_item).withIcon(R.drawable.ic_google_earth);
         SecondaryDrawerItem mapItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.map_item).withIcon(R.drawable.ic_map);
         SecondaryDrawerItem exitItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.exit_item).withIcon(R.drawable.ic_exit_to_app);
-        Drawer drawer = new DrawerBuilder().withActivity(this).withAccountHeader(getAccount()).addDrawerItems(pointItem, routeItem, new DividerDrawerItem(), earthItem, hybridItem, mapItem, new DividerDrawerItem(), langItem, exitItem)
+        Drawer drawer = new DrawerBuilder().withActivity(this).withAccountHeader(getAccount()).addDrawerItems(pointItem, routeItem, new DividerDrawerItem(), yandexItem, new DividerDrawerItem(), earthItem, hybridItem, mapItem, new DividerDrawerItem(), langItem, exitItem)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
@@ -203,22 +203,27 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                 break;
                             }
                             case 4: {
+                                Intent intent = new Intent(activity, YandexMapsLayoutActivity.class);
+                                activity.startActivity(intent);
+                                break;
+                            }
+                            case 6: {
                                 if (isMapReady)
                                     mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                                 break;
                             }
-                            case 5: {
+                            case 7: {
                                 if (isMapReady)
                                     mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                                 break;
 
                             }
-                            case 6: {
+                            case 8: {
                                 if (isMapReady)
                                     mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                                 break;
                             }
-                            case 8: {
+                            case 10: {
                                 showLangDialog();
                                 break;
                             }
@@ -262,9 +267,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 .title(getResources().getString(R.string.end_route));
         mMap.addMarker(startMarker).showInfoWindow();
         mMap.addMarker(endMarker).showInfoWindow();
-
     }
-
 
     public void showDialogToPoints() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
@@ -474,11 +477,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             LatLng latLng = new LatLng(controlPoint.getLat(), controlPoint.getLng());
             mMap.addMarker(new MarkerOptions().title(controlPoint.getName()).position(latLng)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52)));
-            Circle circle = mMap.addCircle(new CircleOptions().center(latLng).radius(controlPoint.getRadius())
+            mMap.addCircle(new CircleOptions().center(latLng).radius(controlPoint.getRadius())
                     .strokeWidth(3)
                     .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
                     .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner)));
-            circleList.add(circle);
         }
     }
 

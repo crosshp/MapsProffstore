@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:focusable="true"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:fontFamily="sans-serif-light"
             android:gravity="right" />
 

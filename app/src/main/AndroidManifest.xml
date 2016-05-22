@@ -22,9 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.YandexMapsLayoutActivity" />
 
-        <receiver android:name=".Receiver.MonitoringPointReceiver" >
-        </receiver>
+        <receiver android:name=".Receiver.MonitoringPointReceiver"></receiver>
     </application>
 
 

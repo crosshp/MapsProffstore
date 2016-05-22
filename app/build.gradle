@@ -18,6 +18,13 @@ android {
         }
     }
 }
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url 'https://github.com/yandexmobile/yandexmapkit-android/raw/maven/' }
+    }
+}
 buildscript {
     repositories {
         jcenter()
@@ -36,5 +43,6 @@ dependencies {
         transitive = true
     }
     compile 'com.wdullaer:materialdatetimepicker:2.3.0'
+    compile 'ru.yandex:yandexmapkit:2.4.2@aar'
 
 }

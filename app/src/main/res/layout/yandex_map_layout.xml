@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ru.yandex.yandexmapkit.MapView
+        android:id="@+id/mapYandex"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:apiKey="1234567890" />
+
+    <ImageButton
+        android:id="@+id/drawerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="13dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:src="@drawable/ic_menu" />
+</RelativeLayout>
