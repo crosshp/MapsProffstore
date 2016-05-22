@@ -64,19 +64,28 @@ public class ServerApi {
 
 
     public static User authUser(String login, String pass) {
+        final User[] user = {null};
         RequestParams requestParams = new RequestParams();
         requestParams.add("login", login);
         requestParams.add("password", pass);
         ServerRestClient.get(ServerRestClient.AUTH_URL, requestParams, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                user[0] = new User("Andrew", 0);
+                /*
+                *
+                *
+                *
+                *
+                *
+                * */
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
             }
         });
-        return new User();
+        return user[0];
     }
 
 }

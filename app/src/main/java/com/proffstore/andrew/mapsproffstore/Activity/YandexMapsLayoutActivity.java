@@ -86,11 +86,17 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         }
     }
 
+    public void exit(){
+        Intent intent = new Intent(this,AuthActivity.class);
+        startActivity(intent);
+        dao.deleteUser();
+        finish();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.yandex_map_layout);
-        Toast.makeText(getBaseContext(), "Yandex", Toast.LENGTH_SHORT).show();
         final AlarmManager am = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent("Intent MY");
         final PendingIntent pi = PendingIntent.getBroadcast(getBaseContext(), 0, i, 0);
@@ -114,7 +120,7 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         config.locale = locale;
         getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         mMap = (MapView) findViewById(R.id.mapYandex);
-        mMap.showFindMeButton(true);
+      //  mMap.showFindMeButton(true);
         mMap.showZoomButtons(true);
         mMap.showJamsButton(true);
         mMap.showScaleView(true);
@@ -211,6 +217,10 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
                             }
                             case 10: {
                                 //showLangDialog();
+                                break;
+                            }
+                            case 11:{
+                                exit();
                                 break;
                             }
                             default:

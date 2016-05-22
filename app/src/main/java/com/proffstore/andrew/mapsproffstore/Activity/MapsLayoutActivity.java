@@ -227,6 +227,10 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                 showLangDialog();
                                 break;
                             }
+                            case 11: {
+                                exit();
+                                break;
+                            }
                             default:
                                 break;
                         }
@@ -234,6 +238,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                     }
                 }).build();
         return drawer;
+    }
+
+    public void exit() {
+        finish();
+        dao.deleteUser();
     }
 
     public void showPointsOnMap(List<Point> points) {

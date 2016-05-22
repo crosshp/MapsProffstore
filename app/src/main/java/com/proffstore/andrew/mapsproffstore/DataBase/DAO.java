@@ -5,6 +5,7 @@ import android.content.Context;
 import com.proffstore.andrew.mapsproffstore.Entity.ControlPoint;
 import com.proffstore.andrew.mapsproffstore.Entity.Point;
 import com.proffstore.andrew.mapsproffstore.Entity.Route;
+import com.proffstore.andrew.mapsproffstore.Entity.User;
 
 import java.util.List;
 
@@ -103,6 +104,26 @@ public class DAO {
         realm.commitTransaction();
     }
 
+    public void saveUser(User user) {
+        Realm realm = Realm.getInstance(realmConfig);
+        realm.beginTransaction();
+        realm.copyToRealm(user);
+        realm.commitTransaction();
+    }
+
+    public void deleteUser() {
+        Realm realm = Realm.getInstance(realmConfig);
+        RealmResults<User> results = realm.where(User.class).findAll();
+        realm.beginTransaction();
+        results.deleteAllFromRealm();
+        realm.commitTransaction();
+    }
+
+    public User getUser() {
+        Realm realm = Realm.getInstance(realmConfig);
+        User result = realm.where(User.class).findFirst();
+        return result;
+    }
 
 
 }

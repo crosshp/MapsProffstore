@@ -1,9 +1,12 @@
 package com.proffstore.andrew.mapsproffstore.Entity;
 
+import io.realm.Realm;
+import io.realm.RealmObject;
+
 /**
  * Created by Andrew on 18.05.2016.
  */
-public class User {
+public class User extends RealmObject{
     private String name;
     private int id;
 

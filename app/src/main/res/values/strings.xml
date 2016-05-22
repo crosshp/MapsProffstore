@@ -45,6 +45,14 @@
     <string name="google_map">Google карта</string>
 
 
+    <string name="auth">Авторизация</string>
+    <string name="auth_button">Войти</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="error_auth">При авторизации возникла ошибка!</string>
+
+
+
     <string-array name="map_types">
         <item>Карта</item>
         <item>Спутник</item>
