@@ -33,6 +33,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -79,6 +80,8 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     DAO dao = null;
     MonitoringPointReceiver receiver = null;
     List<ControlPoint> controlPoints = null;
+    List<Circle> circleList = new ArrayList<>();
+    List<Marker> markerControlPointList = new ArrayList<>();
 
     @Override
     protected void onDestroy() {
@@ -471,10 +474,11 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             LatLng latLng = new LatLng(controlPoint.getLat(), controlPoint.getLng());
             mMap.addMarker(new MarkerOptions().title(controlPoint.getName()).position(latLng)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52)));
-            mMap.addCircle(new CircleOptions().center(latLng).radius(controlPoint.getRadius())
+            Circle circle = mMap.addCircle(new CircleOptions().center(latLng).radius(controlPoint.getRadius())
                     .strokeWidth(3)
                     .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
                     .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner)));
+            circleList.add(circle);
         }
     }
 
@@ -505,8 +509,6 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             i++;
         }
         if (!distanceMap.isEmpty()) {
-            Log.e("first", String.valueOf(distanceMap.firstKey()));
-            Log.e("last", String.valueOf(distanceMap.lastKey()));
             int index = distanceMap.get(distanceMap.firstKey());
             ControlPoint controlPointClick = controlPoints.get(index);
             return controlPointClick;
@@ -578,7 +580,46 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         builder.show();
     }
 
-    private void showSetControlPointDialog(ControlPoint controlPoint) {
+    private void showSetControlPointDialog(final ControlPoint controlPoint) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        final View view = View.inflate(MapsLayoutActivity.this, R.layout.control_point_dialog, null);
+        builder.setView(view);
+        final EditText editName = (EditText) view.findViewById(R.id.editNameKT);
+        editName.setText(controlPoint.getName());
+        final EditText editRadius = (EditText) view.findViewById(R.id.editRadiusKT);
+        editRadius.setText(String.valueOf(controlPoint.getRadius()));
+        builder.setPositiveButton(R.string.apply, null);
+        builder.setNegativeButton(R.string.cancel, null);
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button b = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                b.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        boolean closeDialog = false;
+                        // TODO Do something
+                        if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
+                            Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
+                        } else {
+                            dao.getRealm().beginTransaction();
+                            controlPoint.setName(editName.getText().toString());
+                            controlPoint.setRadius(Double.valueOf(editRadius.getText().toString()));
+                            dao.getRealm().commitTransaction();
+                            mMap.clear();
+                            initializeAllPoints();
+                            initializeControlPoints();
+                            closeDialog = true;
+                        }
+                        if (closeDialog) {
+                            alertDialog.dismiss();
+                        }
+                    }
+                });
+            }
+        });
+        alertDialog.show();
     }
 
     private void showCreateNewControlPointDialog(final LatLng latLng) {
@@ -606,7 +647,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                             Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
                         } else {
                             circleKT[0] = new CircleOptions().strokeWidth(3).center(latLng)
-                                    .radius(Integer.valueOf(editRadius.getText().toString())).visible(true)
+                                    .radius(Double.valueOf(editRadius.getText().toString())).visible(true)
                                     .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
                                     .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner));
                             markerOptions[0] = new MarkerOptions()

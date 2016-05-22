@@ -96,7 +96,7 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.marker52);
         builder.setDefaults(Notification.DEFAULT_SOUND);
-        String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
+        String text = point.getName() + "\n" +
                 context.getString(R.string.control_exit) + controlPoint.getName();
         builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));
         builder.setContentTitle(text);
