@@ -93,6 +93,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         final AlarmManager am = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent("Intent MY");
         final PendingIntent pi = PendingIntent.getBroadcast(getBaseContext(), 0, i, 0);
@@ -110,6 +111,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
             isRussian = true;
         }
         dao = new DAO(getBaseContext());
+        controlPoints = dao.getAllControlPoints();
         Locale locale = new Locale(lang, cntr);
         Locale.setDefault(locale);
         Configuration config = new Configuration();
@@ -673,6 +675,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                                     circleKT[0].getCenter().longitude,
                                     circleKT[0].getRadius());
                             dao.saveControlPoint(controlPoint);
+                            controlPoints = dao.getAllControlPoints();
                             closeDialog = true;
                         }
                         if (closeDialog) {

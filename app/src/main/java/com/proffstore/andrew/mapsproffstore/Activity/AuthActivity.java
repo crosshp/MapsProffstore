@@ -16,7 +16,6 @@ import com.loopj.android.http.RequestParams;
 import com.proffstore.andrew.mapsproffstore.DataBase.DAO;
 import com.proffstore.andrew.mapsproffstore.Entity.User;
 import com.proffstore.andrew.mapsproffstore.R;
-import com.proffstore.andrew.mapsproffstore.REST.ServerApi;
 import com.proffstore.andrew.mapsproffstore.REST.ServerRestClient;
 
 import cz.msebera.android.httpclient.Header;
@@ -36,29 +35,35 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_layout);
         dao = new DAO(getBaseContext());
-        imageView = (ImageView) findViewById(R.id.imageView);
-        progressBar = (ProgressBar) findViewById(R.id.progressBarAuth);
-        root = findViewById(android.R.id.content);
-        final EditText editLogin = (EditText) findViewById(R.id.editLogin);
-        final EditText editPass = (EditText) findViewById(R.id.editPassword);
-        Button button = (Button) findViewById(R.id.loginButton);
-        assert button != null;
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String login = editLogin.getText().toString();
-                String pass = editPass.getText().toString();
-                if (login.length() != 0 && pass.length() != 0) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    imageView.setVisibility(View.GONE);
-                    authUser(login, pass);
-                    Intent intent = new Intent(activity, MapsLayoutActivity.class);
-                    activity.startActivity(intent);
-                } else {
-                    Snackbar.make(root, R.string.edit_field, Snackbar.LENGTH_SHORT).show();
+        User user = dao.getUser();
+        if (user != null) {
+            Intent intent = new Intent(activity, MapsLayoutActivity.class);
+            activity.startActivity(intent);
+        } else {
+            imageView = (ImageView) findViewById(R.id.imageView);
+            progressBar = (ProgressBar) findViewById(R.id.progressBarAuth);
+            root = findViewById(android.R.id.content);
+            final EditText editLogin = (EditText) findViewById(R.id.editLogin);
+            final EditText editPass = (EditText) findViewById(R.id.editPassword);
+            Button button = (Button) findViewById(R.id.loginButton);
+            assert button != null;
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String login = editLogin.getText().toString();
+                    String pass = editPass.getText().toString();
+                    if (login.length() != 0 && pass.length() != 0) {
+                        progressBar.setVisibility(View.VISIBLE);
+                        imageView.setVisibility(View.GONE);
+                        authUser(login, pass);
+                        Intent intent = new Intent(activity, MapsLayoutActivity.class);
+                        activity.startActivity(intent);
+                    } else {
+                        Snackbar.make(root, R.string.edit_field, Snackbar.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
