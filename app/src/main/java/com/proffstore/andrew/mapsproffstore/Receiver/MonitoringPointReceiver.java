@@ -1,5 +1,6 @@
 package com.proffstore.andrew.mapsproffstore.Receiver;
 
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -83,9 +84,10 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
     public void showNotification(ControlPoint controlPoint, Point point, int i) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.marker52);
-        String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
+        String text = point.getName() + "\n" +
                 context.getString(R.string.control_entry) + controlPoint.getName();
         builder.setContentTitle(text);
+        builder.setDefaults(Notification.DEFAULT_SOUND);
         builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));
         NotificationManagerCompat.from(context).notify(i, builder.build());
     }
@@ -93,6 +95,7 @@ public class MonitoringPointReceiver extends BroadcastReceiver {
     public void showOutNotification(ControlPoint controlPoint, Point point, int i) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(R.drawable.marker52);
+        builder.setDefaults(Notification.DEFAULT_SOUND);
         String text = context.getString(R.string.attention_point) + point.getName() + "\n" +
                 context.getString(R.string.control_exit) + controlPoint.getName();
         builder.setStyle(new NotificationCompat.BigTextStyle().bigText(text));

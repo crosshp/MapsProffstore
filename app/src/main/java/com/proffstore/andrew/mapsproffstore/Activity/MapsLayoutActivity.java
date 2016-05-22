@@ -37,8 +37,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.SphericalUtil;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TreeMap;
 
 public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -77,6 +78,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
     DAO dao = null;
     MonitoringPointReceiver receiver = null;
+    List<ControlPoint> controlPoints = null;
 
     @Override
     protected void onDestroy() {
@@ -464,7 +466,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     public void initializeControlPoints() {
-        List<ControlPoint> controlPoints = dao.getAllControlPoints();
+        controlPoints = dao.getAllControlPoints();
         for (ControlPoint controlPoint : controlPoints) {
             LatLng latLng = new LatLng(controlPoint.getLat(), controlPoint.getLng());
             mMap.addMarker(new MarkerOptions().title(controlPoint.getName()).position(latLng)
@@ -491,66 +493,46 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         }
     }
 
+    public ControlPoint onLongCircleListener(LatLng clickPoint) {
+        TreeMap<Double, Integer> distanceMap = new TreeMap<>();
+        int i = 0;
+        for (ControlPoint controlPoint : controlPoints) {
+            LatLng latLngControlPoint = new LatLng(controlPoint.getLat(), controlPoint.getLng());
+            Double distance = SphericalUtil.computeDistanceBetween(clickPoint, latLngControlPoint);
+            if (distance <= controlPoint.getRadius()) {
+                distanceMap.put(distance, i);
+            }
+            i++;
+        }
+        if (!distanceMap.isEmpty()) {
+            Log.e("first", String.valueOf(distanceMap.firstKey()));
+            Log.e("last", String.valueOf(distanceMap.lastKey()));
+            int index = distanceMap.get(distanceMap.firstKey());
+            ControlPoint controlPointClick = controlPoints.get(index);
+            return controlPointClick;
+        }
+        return null;
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         isMapReady = true;
+
         initializeControlPoints();
         initializeAllPoints();
+
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(final LatLng latLng) {
-                final CircleOptions[] circleKT = {null};
-                final MarkerOptions[] markerOptions = {null};
-                AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
-                final View view = View.inflate(MapsLayoutActivity.this, R.layout.control_point_dialog, null);
-                builder.setView(view);
-                final EditText editName = (EditText) view.findViewById(R.id.editNameKT);
-                final EditText editRadius = (EditText) view.findViewById(R.id.editRadiusKT);
-                builder.setPositiveButton(R.string.apply, null);
-                builder.setNegativeButton(R.string.cancel, null);
-                final AlertDialog alertDialog = builder.create();
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialog) {
-                        Button b = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                        b.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                boolean closeDialog = false;
-                                Log.e("Dialog", "I am here");
-                                // TODO Do something
-                                if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
-                                    Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
-                                } else {
-                                    circleKT[0] = new CircleOptions().strokeWidth(3).center(latLng)
-                                            .radius(Integer.valueOf(editRadius.getText().toString())).visible(true)
-                                            .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
-                                            .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner));
-                                    markerOptions[0] = new MarkerOptions()
-                                            .title(editName.getText().toString())
-                                            .position(latLng)
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52));
-                                    mMap.addCircle(circleKT[0]);
-                                    mMap.addMarker(markerOptions[0]);
-                                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-                                    ControlPoint controlPoint = new ControlPoint(editName.getText().toString(),
-                                            circleKT[0].getCenter().latitude,
-                                            circleKT[0].getCenter().longitude,
-                                            circleKT[0].getRadius());
-                                    dao.saveControlPoint(controlPoint);
-                                    closeDialog = true;
-                                }
-                                if (closeDialog) {
-                                    alertDialog.dismiss();
-                                }
-                            }
-                        });
-                    }
-                });
-                alertDialog.show();
+                ControlPoint controlPointClick = onLongCircleListener(latLng);
+                if (controlPointClick != null) {
+                    showControlPointDialog(controlPointClick);
+                } else {
+                    showCreateNewControlPointDialog(latLng);
+                }
+
             }
         });
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -565,6 +547,90 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
                 dao.savePoint(point);
             }
         });
+    }
+
+    private void showControlPointDialog(final ControlPoint controlPoint) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        builder.setTitle(getResources().getString(R.string.settings_cp));
+        final boolean[] isSetControlPoint = {true};
+        builder.setSingleChoiceItems(new String[]{getResources().getString(R.string.set_cp), getResources().getString(R.string.add_cp)}, 0,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) {
+                            isSetControlPoint[0] = true;
+                        } else {
+                            isSetControlPoint[0] = false;
+                        }
+                    }
+                });
+        builder.setPositiveButton(getResources().getString(R.string.apply), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (isSetControlPoint[0]) {
+                    showSetControlPointDialog(controlPoint);
+                } else {
+                    showCreateNewControlPointDialog(new LatLng(controlPoint.getLat(), controlPoint.getLng()));
+                }
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+        builder.show();
+    }
+
+    private void showSetControlPointDialog(ControlPoint controlPoint) {
+    }
+
+    private void showCreateNewControlPointDialog(final LatLng latLng) {
+        final CircleOptions[] circleKT = {null};
+        final MarkerOptions[] markerOptions = {null};
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        final View view = View.inflate(MapsLayoutActivity.this, R.layout.control_point_dialog, null);
+        builder.setView(view);
+        final EditText editName = (EditText) view.findViewById(R.id.editNameKT);
+        final EditText editRadius = (EditText) view.findViewById(R.id.editRadiusKT);
+        builder.setPositiveButton(R.string.apply, null);
+        builder.setNegativeButton(R.string.cancel, null);
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button b = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                b.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        boolean closeDialog = false;
+                        Log.e("Dialog", "I am here");
+                        // TODO Do something
+                        if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
+                            Toast.makeText(getBaseContext(), R.string.edit_field, Toast.LENGTH_SHORT).show();
+                        } else {
+                            circleKT[0] = new CircleOptions().strokeWidth(3).center(latLng)
+                                    .radius(Integer.valueOf(editRadius.getText().toString())).visible(true)
+                                    .fillColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarker))
+                                    .strokeColor(ContextCompat.getColor(getBaseContext(), R.color.colorMarkerCorner));
+                            markerOptions[0] = new MarkerOptions()
+                                    .title(editName.getText().toString())
+                                    .position(latLng)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker52));
+                            mMap.addCircle(circleKT[0]);
+                            mMap.addMarker(markerOptions[0]);
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                            ControlPoint controlPoint = new ControlPoint(editName.getText().toString(),
+                                    circleKT[0].getCenter().latitude,
+                                    circleKT[0].getCenter().longitude,
+                                    circleKT[0].getRadius());
+                            dao.saveControlPoint(controlPoint);
+                            closeDialog = true;
+                        }
+                        if (closeDialog) {
+                            alertDialog.dismiss();
+                        }
+                    }
+                });
+            }
+        });
+        alertDialog.show();
     }
 
     public AccountHeader getAccount() {

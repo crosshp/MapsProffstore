@@ -30,12 +30,17 @@
 
 
     <string name="attention_point">Внимание! Точка:</string>
-    <string name="control_entry">вошла в зону Контрольной точки:</string>
-    <string name="control_exit">покинула зону Контрольной точки:</string>
+    <string name="control_entry">вошла в зону:</string>
+    <string name="control_exit">покинула зону:</string>
 
     <string name="start_route">Начало маршрута!</string>
     <string name="end_route">Конец маршрута!</string>
     <string name="error_point">Выберите точку!</string>
+
+
+    <string name="settings_cp">Параметры контрольной точки</string>
+    <string name="set_cp">Изменить контрольную точку</string>
+    <string name="add_cp">Создать новую контрольную точку</string>
 
 
     <string-array name="map_types">
