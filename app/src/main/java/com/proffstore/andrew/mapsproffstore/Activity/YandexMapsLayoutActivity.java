@@ -59,12 +59,19 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
 import ru.yandex.yandexmapkit.MapController;
 import ru.yandex.yandexmapkit.MapView;
+import ru.yandex.yandexmapkit.OverlayManager;
+import ru.yandex.yandexmapkit.map.MapLayer;
+import ru.yandex.yandexmapkit.overlay.Overlay;
+import ru.yandex.yandexmapkit.overlay.OverlayItem;
+import ru.yandex.yandexmapkit.overlay.balloon.BalloonItem;
+import ru.yandex.yandexmapkit.utils.GeoPoint;
 
 public class YandexMapsLayoutActivity extends AppCompatActivity {
 
@@ -77,6 +84,8 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
     DAO dao = null;
     MonitoringPointReceiver receiver = null;
     MapController mMapController = null;
+    OverlayManager overlayManager = null;
+    Overlay overlay = null;
 
     @Override
     protected void onDestroy() {
@@ -86,8 +95,8 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         }
     }
 
-    public void exit(){
-        Intent intent = new Intent(this,AuthActivity.class);
+    public void exit() {
+        Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
         dao.deleteUser();
         finish();
@@ -120,13 +129,13 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         config.locale = locale;
         getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         mMap = (MapView) findViewById(R.id.mapYandex);
-      //  mMap.showFindMeButton(true);
+        mMap.showFindMeButton(false);
         mMap.showZoomButtons(true);
-        mMap.showJamsButton(true);
-        mMap.showScaleView(true);
-        mMap.showBuiltInScreenButtons(true);
         mMapController = mMap.getMapController();
-
+        mMapController.setZoomCurrent(0);
+        overlayManager = mMapController.getOverlayManager();
+        overlay = new Overlay(mMapController);
+        showAllPoints();
         // Initialize google map
         final Drawer drawer = initializeDrawer();
         ImageButton imageButton = (ImageButton) findViewById(R.id.drawerButton);
@@ -173,6 +182,19 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         return true;
     }
 
+    public void showAllPoints() {
+        List<Point> pointList = dao.getAllPoints();
+        for (Point point : pointList) {
+            BalloonItem balloonItem = new BalloonItem(getBaseContext(), new GeoPoint(point.getLat(), point.getLng()));
+            balloonItem.setText(point.getName());
+            OverlayItem pointItem = new OverlayItem(new GeoPoint(point.getLat(), point.getLng()), getResources().getDrawable(R.drawable.car48));
+            pointItem.setBalloonItem(balloonItem);
+            overlay.addOverlayItem(pointItem);
+            Log.e("New Point", point.toString());
+        }
+        overlayManager.addOverlay(overlay);
+    }
+
     private Drawer initializeDrawer() {
         SecondaryDrawerItem pointItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.point_item).withIcon(R.drawable.ic_map_marker);
         SecondaryDrawerItem googleItem = (SecondaryDrawerItem) new SecondaryDrawerItem().withName(R.string.google_map).withIcon(R.drawable.google_maps_icon);
@@ -201,25 +223,26 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
                                 break;
                             }
                             case 6: {
-                            //    if (isMapReady)
-                                    break;
+                                HashMap hashMap = new HashMap();
+                                //  mMapController.setCurrentMapLayer(new MapLayer);
+                                break;
                             }
                             case 7: {
-                            //    if (isMapReady)
-                                    //     mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-                                    break;
+                                //    if (isMapReady)
+                                //     mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                                break;
 
                             }
                             case 8: {
-                               // if (isMapReady)
-                                    //       mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-                                    break;
+                                // if (isMapReady)
+                                //       mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                                break;
                             }
                             case 10: {
                                 //showLangDialog();
                                 break;
                             }
-                            case 11:{
+                            case 11: {
                                 exit();
                                 break;
                             }
