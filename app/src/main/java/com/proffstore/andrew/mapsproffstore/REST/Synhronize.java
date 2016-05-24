@@ -18,6 +18,7 @@ public class Synhronize {
         List<Point> list = dao.getAllPoints();
         dao.getRealm().beginTransaction();
         list.get(0).setLat(0);
+        list.get(0).setLng(0);
         list.get(1).setLat(0);
         list.get(2).setLat(0);
         dao.getRealm().commitTransaction();

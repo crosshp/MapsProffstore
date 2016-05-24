@@ -1,6 +1,7 @@
 package com.proffstore.andrew.mapsproffstore.Activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -55,6 +57,7 @@ import com.proffstore.andrew.mapsproffstore.Entity.Route;
 import com.proffstore.andrew.mapsproffstore.R;
 import com.proffstore.andrew.mapsproffstore.REST.ServerApi;
 import com.proffstore.andrew.mapsproffstore.Receiver.MonitoringPointReceiver;
+import com.proffstore.andrew.mapsproffstore.YandexMapCustom.LongTapOverlay;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.ArrayList;
@@ -67,10 +70,13 @@ import java.util.TreeMap;
 import ru.yandex.yandexmapkit.MapController;
 import ru.yandex.yandexmapkit.MapView;
 import ru.yandex.yandexmapkit.OverlayManager;
+import ru.yandex.yandexmapkit.map.MapEvent;
 import ru.yandex.yandexmapkit.map.MapLayer;
+import ru.yandex.yandexmapkit.map.OnMapListener;
 import ru.yandex.yandexmapkit.overlay.Overlay;
 import ru.yandex.yandexmapkit.overlay.OverlayItem;
 import ru.yandex.yandexmapkit.overlay.balloon.BalloonItem;
+import ru.yandex.yandexmapkit.overlay.balloon.BalloonRender;
 import ru.yandex.yandexmapkit.utils.GeoPoint;
 
 public class YandexMapsLayoutActivity extends AppCompatActivity {
@@ -83,9 +89,9 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
     DAO dao = null;
     MonitoringPointReceiver receiver = null;
-    MapController mMapController = null;
-    OverlayManager overlayManager = null;
-    Overlay overlay = null;
+    public static MapController mMapController = null;
+    public static OverlayManager overlayManager = null;
+    public static Overlay overlay = null;
 
     @Override
     protected void onDestroy() {
@@ -135,6 +141,8 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         mMapController.setZoomCurrent(0);
         overlayManager = mMapController.getOverlayManager();
         overlay = new Overlay(mMapController);
+        LongTapOverlay longTapOverlay = new LongTapOverlay(mMapController,getBaseContext());
+        overlayManager.addOverlay(longTapOverlay);
         showAllPoints();
         // Initialize google map
         final Drawer drawer = initializeDrawer();
@@ -186,6 +194,21 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         List<Point> pointList = dao.getAllPoints();
         for (Point point : pointList) {
             BalloonItem balloonItem = new BalloonItem(getBaseContext(), new GeoPoint(point.getLat(), point.getLng()));
+            balloonItem.setText("<b>Имя метки</b><div>Описание метки</div>");
+            OverlayItem pointItem = new OverlayItem(new GeoPoint(point.getLat(), point.getLng()), getResources().getDrawable(R.drawable.car48));
+            pointItem.setBalloonItem(balloonItem);
+            overlay.addOverlayItem(pointItem);
+            Log.e("New Point", point.toString());
+        }
+        overlayManager.addOverlay(overlay);
+        mMapController.notifyRepaint();
+    }
+
+
+    public void showPointsOnMap(List<Point> pointList) {
+        overlay.clearOverlayItems();
+        for (Point point : pointList) {
+            BalloonItem balloonItem = new BalloonItem(getBaseContext(), new GeoPoint(point.getLat(), point.getLng()));
             balloonItem.setText(point.getName());
             OverlayItem pointItem = new OverlayItem(new GeoPoint(point.getLat(), point.getLng()), getResources().getDrawable(R.drawable.car48));
             pointItem.setBalloonItem(balloonItem);
@@ -193,6 +216,11 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
             Log.e("New Point", point.toString());
         }
         overlayManager.addOverlay(overlay);
+        mMapController.notifyRepaint();
+    }
+
+    public void onLongPress(float lat, float lng) {
+        Log.e("Long click", lat + "\n" + lng);
     }
 
     private Drawer initializeDrawer() {
@@ -211,7 +239,7 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
                         Log.e("position", String.valueOf(position));
                         switch (position) {
                             case 1: {
-                                //   showDialogToPoints();
+                                showDialogToPoints();
                                 break;
                             }
                             case 2: {
@@ -239,7 +267,7 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
                                 break;
                             }
                             case 10: {
-                                //showLangDialog();
+                                showLangDialog();
                                 break;
                             }
                             case 11: {
@@ -287,6 +315,49 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         });
         builder.setNegativeButton(getResources().getString(R.string.cancel), null);
         builder.show();
+    }
+
+
+    public void showDialogToPoints() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(YandexMapsLayoutActivity.this, R.style.AppCompatAlertDialogStyle);
+        final List<Point> indexes = new ArrayList<>();
+        builder.setTitle(getResources().getString(R.string.show_points));
+        builder.setNegativeButton(getResources().getString(R.string.cancel), null);
+        final List<Point> list = dao.getAllPoints();
+        boolean[] listChecked = new boolean[list.size()];
+        for (boolean isChecked : listChecked) {
+            isChecked = false;
+        }
+        List<String> pointsName = new ArrayList<>();
+        for (Point point : list) {
+            pointsName.add(point.getName());
+        }
+        builder.setMultiChoiceItems(pointsName.toArray(new String[]{}), listChecked, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                if (isChecked) {
+                    indexes.add(list.get(which));
+                } else {
+                    indexes.remove(list.get(which));
+                }
+            }
+        });
+        builder.setPositiveButton(getResources().getString(R.string.show), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                showPointsOnMap(indexes);
+            }
+        });
+        final AlertDialog alertDialog = builder.show();
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setFocusable(true);
+                negative.setFocusableInTouchMode(true);
+                negative.requestFocus();
+            }
+        });
     }
 
     public AccountHeader getAccount() {
