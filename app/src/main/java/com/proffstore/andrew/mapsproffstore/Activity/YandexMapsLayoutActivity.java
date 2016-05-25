@@ -85,6 +85,7 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
     private MapView mMap;
     private static boolean isRussian = true;
     private SharedPreferences sharedPreferences = null;
+    public YandexMapsLayoutActivity activity = this;
     private static String NAME_ACCOUNT = "NAME_ACCOUNT";
     private static String EMAIL_ACCOUNT = "EMAIL_ACCOUNT";
     DAO dao = null;
@@ -141,7 +142,7 @@ public class YandexMapsLayoutActivity extends AppCompatActivity {
         mMapController.setZoomCurrent(0);
         overlayManager = mMapController.getOverlayManager();
         overlay = new Overlay(mMapController);
-        LongTapOverlay longTapOverlay = new LongTapOverlay(mMapController,getBaseContext());
+        LongTapOverlay longTapOverlay = new LongTapOverlay(mMapController, getBaseContext(),activity);
         overlayManager.addOverlay(longTapOverlay);
         showAllPoints();
         // Initialize google map
