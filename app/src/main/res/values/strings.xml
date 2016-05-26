@@ -15,6 +15,7 @@
     <string name="route_item">Маршруты</string>
     <string name="lang_item">Язык</string>
     <string name="earth_item">Спутник</string>
+    <string name="folk_item">Народная</string>
     <string name="hybrid_item">Гибрид</string>
     <string name="map_item">Карта</string>
     <string name="exit_item">Выход</string>

@@ -26,6 +26,8 @@ import java.util.TreeMap;
 
 import ru.yandex.yandexmapkit.MapController;
 import ru.yandex.yandexmapkit.overlay.Overlay;
+import ru.yandex.yandexmapkit.overlay.OverlayItem;
+import ru.yandex.yandexmapkit.overlay.balloon.BalloonItem;
 import ru.yandex.yandexmapkit.utils.GeoPoint;
 import ru.yandex.yandexmapkit.utils.ScreenPoint;
 
@@ -190,6 +192,15 @@ public class LongTapOverlay extends Overlay {
                         if (editName.getText().length() == 0 || editRadius.getText().length() == 0) {
                             Toast.makeText(context, R.string.edit_field, Toast.LENGTH_SHORT).show();
                         } else {
+                            GeoPoint geoPoint = new GeoPoint(latLng.latitude, latLng.longitude);
+                            OverlayItem overlayItem = new OverlayItem(geoPoint, context.getResources().getDrawable(R.drawable.bubble_mask));
+                            BalloonItem balloonItem = new BalloonItem(context, geoPoint);
+                            balloonItem.setText(editName.getText());
+                            overlayItem.setBalloonItem(balloonItem);
+                            YandexMapsLayoutActivity.controlPointOverlay.addOverlayItem(overlayItem);
+                            YandexMapsLayoutActivity.mMapController.notifyRepaint();
+                            YandexMapsLayoutActivity.mMapController.setPositionAnimationTo(geoPoint, 15);
+
                         /*    circleKT[0] = new CircleOptions().strokeWidth(3).center(latLng)
                                     .radius(Double.valueOf(editRadius.getText().toString())).visible(true)
                                     .fillColor(ContextCompat.getColor(context, R.color.colorMarker))

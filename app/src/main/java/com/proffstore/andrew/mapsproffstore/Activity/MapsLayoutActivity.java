@@ -97,7 +97,7 @@ public class MapsLayoutActivity extends AppCompatActivity implements OnMapReadyC
         final AlarmManager am = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent("Intent MY");
         final PendingIntent pi = PendingIntent.getBroadcast(getBaseContext(), 0, i, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 5, pi); // Millisec * Second * Minute
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 10, pi); // Millisec * Second * Minute
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("Intent MY");
